@@ -18,15 +18,15 @@ private:
 
 public:
     explicit Vertex(T val);
-    Vertex<T, T2> getLeftChild();
-    Vertex<T, T2> getRightChild();
-    Vertex<T, T2> getParent();
+    Vertex<T, T2>* getLeftChild();
+    Vertex<T, T2>* getRightChild();
+    Vertex<T, T2>* getParent();
     T getValue();
     T2 getEdgeValue();
 
-    void setLeftChild(Vertex<T, T2> lv);
-    void setRightChild(Vertex<T, T2> rv);
-    void setParent(Vertex<T, T2> pv);
+    void setLeftChild(Vertex<T, T2>* lv);
+    void setRightChild(Vertex<T, T2>* rv);
+    void setParent(Vertex<T, T2>* pv);
     void setValue(T val);
     void setEdgeValue(T edgeVal);
 };

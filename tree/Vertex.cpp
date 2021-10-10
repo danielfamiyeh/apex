@@ -25,17 +25,17 @@ T2 Vertex<T, T2>::getEdgeValue() {
 }
 
 template <typename T, typename T2>
-Vertex<T, T2> Vertex<T, T2>::getLeftChild() {
+Vertex<T, T2>* Vertex<T, T2>::getLeftChild() {
     return left;
 }
 
 template <typename T, typename T2>
-Vertex<T, T2> Vertex<T, T2>::getRightChild() {
+Vertex<T, T2>* Vertex<T, T2>::getRightChild() {
     return right;
 }
 
 template <typename T, typename T2>
-Vertex<T, T2> Vertex<T, T2>::getParent() {
+Vertex<T, T2>* Vertex<T, T2>::getParent() {
     return parent;
 }
 
@@ -51,17 +51,17 @@ void Vertex<T, T2>::setEdgeValue(T edgeVal) {
 }
 
 template <typename T, typename T2>
-void Vertex<T, T2>::setLeftChild(Vertex<T, T2> lv) {
+void Vertex<T, T2>::setLeftChild(Vertex<T, T2>* lv) {
     left = lv;
 }
 
 
 template <typename T, typename T2>
-void Vertex<T, T2>::setRightChild(Vertex<T, T2> rv) {
+void Vertex<T, T2>::setRightChild(Vertex<T, T2>* rv) {
     right = rv;
 }
 
 template <typename T, typename T2>
-void Vertex<T, T2>::setParent(Vertex<T, T2> pv) {
+void Vertex<T, T2>::setParent(Vertex<T, T2>* pv) {
     parent = pv;
 }
