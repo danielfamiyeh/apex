@@ -13,11 +13,12 @@ private:
     Vertex* left;
     Vertex* right;
     Vertex* parent;
-    T value;
-    T2 edgeValue;
+    T* value;
+    T2* edgeValue;
 
 public:
     explicit Vertex(T val);
+    ~Vertex();
     Vertex<T, T2>* getLeftChild();
     Vertex<T, T2>* getRightChild();
     Vertex<T, T2>* getParent();
