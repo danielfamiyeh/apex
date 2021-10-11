@@ -29,7 +29,7 @@ public:
     void setRightChild(Vertex<T, T2>* rv);
     void setParent(Vertex<T, T2>* pv);
     void setValue(T val);
-    void setEdgeValue(T edgeVal);
+    void setEdgeValue(T2 edgeVal);
 };
 
 

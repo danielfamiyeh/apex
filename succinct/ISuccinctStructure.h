@@ -6,5 +6,12 @@
 #define DNASSEMBLER_ISUCCINCTSTRUCTURE_H
 
 
+template <typename T, typename T2>
+class ISuccinctStructure {
+public:
+    virtual T access(int i) = 0;
+    virtual int rank(T c, int i) = 0;
+    virtual int select(T c, int i) = 0;
+};
 
 #endif //DNASSEMBLER_ISUCCINCTSTRUCTURE_H
