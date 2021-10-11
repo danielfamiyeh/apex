@@ -6,7 +6,7 @@
 #define DNASSEMBLER_ISUCCINCTSTRUCTURE_H
 
 
-template <typename T, typename T2>
+template <typename T>
 class ISuccinctStructure {
 public:
     virtual T access(int i) = 0;
