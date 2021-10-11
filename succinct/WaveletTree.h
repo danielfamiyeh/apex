@@ -20,16 +20,20 @@ private:
     const std::string& str, bool start
     );
 public:
-    WaveletTree(std::string alphabet, const std::string& str);
-    ~WaveletTree();
+  WaveletTree(
+          std::string alphabet,
+          const std::string& str
+          );
+  ~WaveletTree();
 
 
-    void preorder(
-            Vertex<BitVector<bool>, char>* v,
-            void (*fun)(Vertex<BitVector<bool>, char>*)
-            );
-    void
-    print();
+  void
+  preorder(
+    Vertex<BitVector<bool>, char>* v,
+    void (*fun)(Vertex<BitVector<bool>, char>*)
+    );
+
+  void print();
 //    T access(int i);
 //    int rank(T c, int i);
 //    int select(T c, int i);

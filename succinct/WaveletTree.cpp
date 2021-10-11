@@ -14,8 +14,7 @@ void
 printTree(
   Vertex<BitVector<bool>,
   char>* v
-  )
-{
+  ) {
   BitVector<bool> val = v->getValue();
   char c = v->getEdgeValue();
   if (c) std::cout << c;
@@ -30,8 +29,7 @@ printTree(
 WaveletTree::WaveletTree(
         std::string alphabet,
         const std::string& str
-        )
-{
+        ) {
   root = partition(std::move(alphabet), str, true);
   print();
 }
@@ -45,8 +43,7 @@ WaveletTree::partition(
   std::string alphabet,
   const std::string& str,
   bool start=false
-)
-{
+) {
     int alphaMidpoint = (int)(alphabet.size() /2);
     std::map<char, bool> charMap;
     BitVector<bool> bitVector;
@@ -101,8 +98,7 @@ void
 WaveletTree::preorder(
   Vertex<BitVector<bool>, char>* v,
   void (*fun)(Vertex<BitVector<bool>, char>*)
-        )
-{
+        ) {
   if (!v) return;
   fun(v);
   preorder(v->getLeftChild(), fun);
@@ -110,7 +106,6 @@ WaveletTree::preorder(
 }
 
 void
-WaveletTree::print()
-{
+WaveletTree::print() {
   preorder(root, printTree);
 }
