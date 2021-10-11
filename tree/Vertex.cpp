@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <vector>
 #include "Vertex.h"
 
 
@@ -56,7 +57,7 @@ void Vertex<T, T2>::setValue(T val) {
 }
 
 template <typename T, typename T2>
-void Vertex<T, T2>::setEdgeValue(T edgeVal) {
+void Vertex<T, T2>::setEdgeValue(T2 edgeVal) {
     *edgeValue = edgeVal;
 }
 
@@ -76,4 +77,4 @@ void Vertex<T, T2>::setParent(Vertex<T, T2>* pv) {
     parent = pv;
 }
 
-template class Vertex<int, int>;
+template class Vertex<std::vector<bool>, char>;
