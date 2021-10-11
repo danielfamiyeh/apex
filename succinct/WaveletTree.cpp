@@ -9,10 +9,14 @@
 #include <set>
 
 #include "WaveletTree.h"
-void _print(Vertex<std::vector<bool>, char>* v) {
+void printTree(Vertex<std::vector<bool>, char>* v) {
     std::vector<bool> val = v->getValue();
-    for(auto && i : val) {
-        std::cout << i;
+    char c = v->getEdgeValue();
+    if (c) std::cout << c;
+    else {
+        for (auto &&i: val) {
+            std::cout << i;
+        }
     }
     std::cout << std::endl;
 }
@@ -43,23 +47,25 @@ Vertex<std::vector<bool>, char>* WaveletTree::partition(std::string alphabet, co
 
     // Covert string to bitVector
     for (char c : str) {
-        bool val = (bool)charMap[c];
+        bool val = (bool) charMap[c];
         bitVector.push_back(val);
 
         // Create new child vectors and alphabet
-        if(!val) {
+        if (!val) {
             leftStrVector.push_back(c);
             leftAlpha.insert(c);
-        }
-        else {
+        } else {
             rightStrVector.push_back(c);
             rightAlpha.insert(c);
         }
     }
 
-    if(alphabet.size() == 1) return nullptr;
-
     v = new Vertex<std::vector<bool>, char>(bitVector);
+
+    if(alphabet.size() == 1) {
+        v->setEdgeValue(alphabet[0]);
+        return v;
+    }
 
     // Recurse on children and assign
    v->setLeftChild(partition(
@@ -86,5 +92,5 @@ void WaveletTree::preorder(Vertex<std::vector<bool>, char>* v, void (*fun)(Verte
 }
 
 void WaveletTree::print(){
-    preorder(root, _print);
+    preorder(root, printTree);
 }
