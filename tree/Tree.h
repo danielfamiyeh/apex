@@ -24,8 +24,6 @@ public:
     bool isEmpty();
     bool isRoot(T val);
     bool find(T val);
-    int height();
-    int size();
 };
 
 
