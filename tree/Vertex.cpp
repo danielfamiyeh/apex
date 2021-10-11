@@ -4,8 +4,9 @@
 
 #include <iostream>
 #include <vector>
-#include "Vertex.h"
 
+#include "Vertex.h"
+#include "../succinct/BitVector.h"
 
 // Constructor
 template <typename T, typename T2>
@@ -77,4 +78,4 @@ void Vertex<T, T2>::setParent(Vertex<T, T2>* pv) {
     parent = pv;
 }
 
-template class Vertex<std::vector<bool>, char>;
+template class Vertex<BitVector<bool>, char>;

@@ -9,36 +9,52 @@
 #include <set>
 
 #include "WaveletTree.h"
-void printTree(Vertex<std::vector<bool>, char>* v) {
-    std::vector<bool> val = v->getValue();
-    char c = v->getEdgeValue();
-    if (c) std::cout << c;
-    else {
-        for (auto &&i: val) {
-            std::cout << i;
-        }
+
+void
+printTree(
+  Vertex<BitVector<bool>,
+  char>* v
+  )
+{
+  BitVector<bool> val = v->getValue();
+  char c = v->getEdgeValue();
+  if (c) std::cout << c;
+  else {
+    for (auto &&i: val.getVector()) {
+      std::cout << i;
     }
-    std::cout << std::endl;
+  }
+  std::cout << std::endl;
 }
-WaveletTree::WaveletTree(std::string alphabet, const std::string& str) {
-    root = partition(std::move(alphabet), str, true);
-    print();
+
+WaveletTree::WaveletTree(
+        std::string alphabet,
+        const std::string& str
+        )
+{
+  root = partition(std::move(alphabet), str, true);
+  print();
 }
 
 WaveletTree::~WaveletTree() {
-    delete(root);
+  delete(root);
 }
 
-Vertex<std::vector<bool>, char>* WaveletTree::partition(std::string alphabet, const std::string& str, bool start=false) {
-
+Vertex<BitVector<bool>, char>*
+WaveletTree::partition(
+  std::string alphabet,
+  const std::string& str,
+  bool start=false
+)
+{
     int alphaMidpoint = (int)(alphabet.size() /2);
     std::map<char, bool> charMap;
-    std::vector<bool> bitVector;
+    BitVector<bool> bitVector;
     std::vector<char> leftStrVector;
     std::vector<char> rightStrVector;
     std::set<char> leftAlpha;
     std::set<char> rightAlpha;
-    Vertex<std::vector<bool>, char>* v = nullptr;
+    Vertex<BitVector<bool>, char>* v = nullptr;
 
     // Create 0/1 character map
     for (int i=0; i<alphabet.size(); i++) {
@@ -48,7 +64,7 @@ Vertex<std::vector<bool>, char>* WaveletTree::partition(std::string alphabet, co
     // Covert string to bitVector
     for (char c : str) {
         bool val = (bool) charMap[c];
-        bitVector.push_back(val);
+        bitVector.pushBack(val);
 
         // Create new child vectors and alphabet
         if (!val) {
@@ -60,7 +76,7 @@ Vertex<std::vector<bool>, char>* WaveletTree::partition(std::string alphabet, co
         }
     }
 
-    v = new Vertex<std::vector<bool>, char>(bitVector);
+    v = new Vertex<BitVector<bool>, char>(bitVector);
 
     if(alphabet.size() == 1) {
         v->setEdgeValue(alphabet[0]);
@@ -79,18 +95,22 @@ Vertex<std::vector<bool>, char>* WaveletTree::partition(std::string alphabet, co
     ));
 
     return v;
-
-
 }
 
-void WaveletTree::preorder(Vertex<std::vector<bool>, char>* v, void (*fun)(Vertex<std::vector<bool>, char>*)) {
-    if (!v) return;
-    fun(v);
-    preorder(v->getLeftChild(), fun);
-    preorder(v->getRightChild(), fun);
-
+void
+WaveletTree::preorder(
+  Vertex<BitVector<bool>, char>* v,
+  void (*fun)(Vertex<BitVector<bool>, char>*)
+        )
+{
+  if (!v) return;
+  fun(v);
+  preorder(v->getLeftChild(), fun);
+  preorder(v->getRightChild(), fun);
 }
 
-void WaveletTree::print(){
-    preorder(root, printTree);
+void
+WaveletTree::print()
+{
+  preorder(root, printTree);
 }

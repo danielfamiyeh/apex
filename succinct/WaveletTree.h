@@ -7,20 +7,29 @@
 
 #include <vector>
 
+#include "BitVector.h"
 #include "ISuccinctStructure.h"
 #include "../tree/Vertex.h"
 
 class WaveletTree{
 private:
-    Vertex<std::vector<bool>, char>* root;
-    Vertex<std::vector<bool>, char>* partition(std::string alphabet, const std::string& str, bool start);
+  Vertex<BitVector<bool>, char>* root;
+  Vertex<BitVector<bool>, char>*
+  partition(
+    std::string alphabet,
+    const std::string& str, bool start
+    );
 public:
     WaveletTree(std::string alphabet, const std::string& str);
     ~WaveletTree();
 
 
-    void preorder(Vertex<std::vector<bool>, char>* v, void (*fun)(Vertex<std::vector<bool>, char>*));
-    void print();
+    void preorder(
+            Vertex<BitVector<bool>, char>* v,
+            void (*fun)(Vertex<BitVector<bool>, char>*)
+            );
+    void
+    print();
 //    T access(int i);
 //    int rank(T c, int i);
 //    int select(T c, int i);
