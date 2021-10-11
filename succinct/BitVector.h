@@ -7,9 +7,12 @@
 
 
 #include <vector>
+#include <iterator>
+
 #include "ISuccinctStructure.h"
 
 template <typename T>
+
 class BitVector: public ISuccinctStructure<T>{
 
 private:
@@ -22,6 +25,7 @@ public:
     int select(T c, int i);
     void pushBack(T c);
     void print();
+    std::vector<T> getVector();
 };
 
 

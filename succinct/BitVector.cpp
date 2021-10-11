@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <vector>
 
 #include "BitVector.h"
 
@@ -47,6 +48,11 @@ void BitVector<T>::print() {
         std::cout << vector[i];
     }
     std::cout << std::endl;
+}
+
+template <typename T>
+std::vector<T> BitVector<T>::getVector() {
+    return vector;
 }
 
 template class BitVector<bool>;
