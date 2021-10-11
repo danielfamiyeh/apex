@@ -6,71 +6,69 @@
 #include "Vertex.h"
 
 template <typename T, typename T2>
-Tree<T, T2>::Tree(){
-    root = nullptr;
-}
+Tree<T, T2>::Tree()= default;
 
 template <typename T, typename T2>
 Vertex<T, T2>* Tree<T, T2>::getRoot() {
-    return root;
+  return root;
 }
 
 template <typename T, typename T2>
 Vertex<T, T2>* Tree<T, T2>::getVertex(T val) {
-    Vertex<T, T2>* next = root;
-    Vertex<T, T2>* current;
+  Vertex<T, T2>* next = root;
+  Vertex<T, T2>* current;
 
-    while(next != nullptr){
-        current = next;
-        next = val < current->getValue() ? current->getLeftChild() : current->getRightChild();
-        if(current->getValue() == val) return current;
-    }
-    return nullptr;
+  while(next != nullptr) {
+    current = next;
+    next = val < current->getValue() ? current->getLeftChild() : current->getRightChild();
+    if(current->getValue() == val) return current;
+  }
+  return nullptr;
 }
 
 
 template <typename T, typename T2>
 Vertex<T, T2>* Tree<T, T2>::getParent(T val) {
-    Vertex<T, T2>* target = getVertex(val);
-    return target == nullptr ? target : target->getParent();
+  Vertex<T, T2>* target = getVertex(val);
+  return target == nullptr ? target : target->getParent();
 }
 
 template <typename T, typename T2>
 Vertex<T, T2>** Tree<T, T2>::getChildren(T val) {
-    Vertex<T, T2>* target = getVertex(val);
+  Vertex<T, T2>* target = getVertex(val);
 
     if(target)
     {
-        Vertex<T, T2> children[2] = {target->getLeftChild(), target->getRightChild()};
-        return children;
+      Vertex<T, T2> children[2] = {target->getLeftChild(), target->getRightChild()};
+      return children;
     }
     return nullptr;
 }
 
 template <typename T, typename T2>
 bool Tree<T, T2>::isInternal(T val) {
-    Vertex<T, T2>* target = getVertex(val);
-    return target != nullptr && (target->getLeftChild() || target->getRightChild());
+  Vertex<T, T2>* target = getVertex(val);
+  return target != nullptr && (target->getLeftChild() || target->getRightChild());
 }
 
 template <typename T, typename T2>
 bool Tree<T, T2>::isExternal(T val) {
-    return !isInternal(val);
+  return !isInternal(val);
 }
 
 template <typename T, typename T2>
 bool Tree<T, T2>::isEmpty() {
-    return !root;
+  return !root;
 }
 
 template <typename T, typename T2>
 bool Tree<T, T2>::isRoot(T val) {
-    Vertex<T, T2>* target = getVertex(val);
-    return target == root;
+  Vertex<T, T2>* target = getVertex(val);
+  return target == root;
 }
 
 template <typename T, typename T2>
 bool Tree<T, T2>::find(T val) {
-    return getVertex(val);
+  return getVertex(val);
 }
 
