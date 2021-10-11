@@ -7,21 +7,37 @@
 
 
 #include <vector>
+#include <iterator>
+
 #include "ISuccinctStructure.h"
 
 template <typename T>
+
 class BitVector: public ISuccinctStructure<T>{
 
 private:
-    std::vector<T> vector;
+  std::vector<T> vector;
 
 public:
-    BitVector();
-    T access(int i);
-    int rank(T c, int i);
-    int select(T c, int i);
-    void pushBack(T c);
-    void print();
+  BitVector();
+
+  T
+  access(int i);
+
+  int
+  rank(T c, int i);
+
+  int
+  select(T c, int i);
+
+  void
+  pushBack(T c);
+
+  void
+  print();
+
+  std::vector<T>
+  getVector();
 };
 
 
