@@ -12,8 +12,7 @@
 
 void
 printTree(
-  Vertex<BitVector<bool>,
-  char>* v
+  WaveletNode* v
   ) {
   BitVector<bool> val = v->getValue();
   char c = v->getEdgeValue();
@@ -38,7 +37,7 @@ WaveletTree::~WaveletTree() {
   delete(root);
 }
 
-Vertex<BitVector<bool>, char>*
+WaveletNode*
 WaveletTree::partition(
   std::string alphabet,
   const std::string& str,
@@ -73,7 +72,7 @@ WaveletTree::partition(
         }
     }
 
-    v = new Vertex<BitVector<bool>, char>(bitVector);
+    v = new WaveletNode(bitVector);
 
     if(alphabet.size() == 1) {
         v->setEdgeValue(alphabet[0]);
@@ -96,8 +95,8 @@ WaveletTree::partition(
 
 void
 WaveletTree::preorder(
-  Vertex<BitVector<bool>, char>* v,
-  void (*fun)(Vertex<BitVector<bool>, char>*)
+  WaveletNode * v,
+  void (*fun)(WaveletNode*)
         ) {
   if (!v) return;
   fun(v);
@@ -108,4 +107,18 @@ WaveletTree::preorder(
 void
 WaveletTree::print() {
   preorder(root, printTree);
+}
+
+char
+WaveletTree::access(int i) {
+    int* _i = new int(i);
+    WaveletNode* n = root;
+    while (!n->getEdgeValue()) {
+        BitVector<bool> bVec = n->getValue();
+        bool bBool = bVec.access(* _i);
+        n = !bBool ? n->getLeftChild() : n->getRightChild();
+        *_i = bVec.rank(bBool, * _i);
+    }
+
+    return n->getEdgeValue();
 }

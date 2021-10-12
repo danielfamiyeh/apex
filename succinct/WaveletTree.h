@@ -11,6 +11,8 @@
 #include "ISuccinctStructure.h"
 #include "../tree/Vertex.h"
 
+typedef Vertex<BitVector<bool>, char> WaveletNode;
+
 class WaveletTree{
 private:
   Vertex<BitVector<bool>, char>* root;
@@ -33,8 +35,12 @@ public:
     void (*fun)(Vertex<BitVector<bool>, char>*)
     );
 
-  void print();
-//    T access(int i);
+  void
+  print();
+
+  char
+  access(int i);
+
 //    int rank(T c, int i);
 //    int select(T c, int i);
 };
