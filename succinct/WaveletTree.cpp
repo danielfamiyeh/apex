@@ -16,59 +16,46 @@
 
 #include "WaveletTree.h"
 
-void
-printTree(
-    WaveletNode * v
-) {
-  BitVector < bool > val = v -> getValue();
-  char c = v -> getLeafValue();
-  if (c) std::cout << c;
+void printTree(WaveletNode *v) {
+  BitVector<bool> val = v->getValue();
+  char c = v->getLeafValue();
+  if (c)
+    std::cout << c;
   else {
-    for (auto && i: val.getVector()) {
+    for (auto &&i : val.getVector()) {
       std::cout << i;
     }
   }
   std::cout << std::endl;
 }
 
-WaveletTree::WaveletTree(
-    std::string alphabet,
-    const std::string & str
-) {
-
+WaveletTree::WaveletTree(std::string alphabet, const std::string &str) {
   root = partition(std::move(alphabet), str, true);
   inferCodes();
-  //print();
 }
 
-WaveletTree::~WaveletTree() {
-  delete(root);
-}
+WaveletTree::~WaveletTree() { delete (root); }
 
-WaveletNode *
-WaveletTree::partition(
-    std::string alphabet,
-    const std::string & str,
-    bool start = false
-) {
+WaveletNode *WaveletTree::partition(std::string alphabet,
+                                    const std::string &str,
+                                    bool start = false) {
   int alphaMidpoint = (int)(alphabet.size() / 2);
-  std::map < char, bool > charMap;
-  BitVector < bool > bitVector;
-  std::vector < char > leftStrVector;
-  std::vector < char > rightStrVector;
-  std::set < char > leftAlpha;
-  std::set < char > rightAlpha;
-  WaveletNode* v = nullptr;
+  std::map<char, bool> charMap;
+  BitVector<bool> bitVector;
+  std::vector<char> leftStrVector;
+  std::vector<char> rightStrVector;
+  std::set<char> leftAlpha;
+  std::set<char> rightAlpha;
+  WaveletNode *v = nullptr;
 
   // Create 0/1 character map
   for (int i = 0; i < alphabet.size(); i++) {
     charMap[alphabet[i]] = i >= alphaMidpoint;
-    codes[alphabet[i]].push_back(i >= alphaMidpoint);
   }
 
   // Covert string to bitVector
-  for (char c: str) {
-    bool val = (bool) charMap[c];
+  for (char c : str) {
+    bool val = (bool)charMap[c];
     bitVector.pushBack(val);
 
     // Create new child vectors and alphabet
@@ -84,75 +71,97 @@ WaveletTree::partition(
   v = new WaveletNode(bitVector);
 
   if (alphabet.size() == 1) {
-    v -> setLeafValue(alphabet[0]);
+    v->setLeafValue(alphabet[0]);
+    codes[alphabet[0]] = new std::deque<bool>();
     leaves.push_back(v);
     return v;
   }
 
   // Recurse on children and assign
-  v -> setLeftChild(partition(
-      std::string(leftAlpha.begin(), leftAlpha.end()),
-      std::string(leftStrVector.begin(), leftStrVector.end())
-          ));
-  v -> getLeftChild() -> setEdgeValue(0);
+  v->setLeftChild(
+      partition(std::string(leftAlpha.begin(), leftAlpha.end()),
+                std::string(leftStrVector.begin(), leftStrVector.end())));
+  v->getLeftChild()->setEdgeValue(0);
 
-  v -> setRightChild(partition(
-      std::string(rightAlpha.begin(), rightAlpha.end()),
-      std::string(rightStrVector.begin(), rightStrVector.end())
-          ));
-  v -> getRightChild() -> setEdgeValue(1);
+  v->setRightChild(
+      partition(std::string(rightAlpha.begin(), rightAlpha.end()),
+                std::string(rightStrVector.begin(), rightStrVector.end())));
+  v->getRightChild()->setEdgeValue(1);
 
   return v;
 }
 
-void
-    WaveletTree::inferCodes() {
+void WaveletTree::inferCodes() {
   for (auto current : leaves) {
-      std::deque<bool> code;
-      WaveletNode* v;
-      WaveletNode* n = current;
+    WaveletNode *v;
+    WaveletNode *n = current;
 
-      while(n->getParent()) {
-        v = n;
-        code.push_front(v->getEdgeValue());
-        n = v->getParent();
-      }
-      codes[current->getLeafValue()] = code;
+    while (n->getParent()) {
+      v = n;
+      n = v->getParent();
+      codes[current->getLeafValue()]->push_front((v->getEdgeValue()));
     }
+  }
 }
 
-void
-WaveletTree::preorder(
-    WaveletNode * v,
-    void( * fun)(WaveletNode * )
-) {
-  if (!v) return;
+void WaveletTree::preorder(WaveletNode *v, void (*fun)(WaveletNode *)) {
+  if (!v)
+    return;
   fun(v);
-  preorder(v -> getLeftChild(), fun);
-  preorder(v -> getRightChild(), fun);
+  preorder(v->getLeftChild(), fun);
+  preorder(v->getRightChild(), fun);
 }
 
-void
-WaveletTree::print() {
-  preorder(root, printTree);
-}
+void WaveletTree::print() { preorder(root, printTree); }
 
-char
-WaveletTree::access(int i) {
-  int * _i = new int(i);
-  WaveletNode * n = root;
-  while (!n -> getLeafValue()) {
-    BitVector < bool > bVec = n -> getValue();
-    bool bBool = bVec.access( * _i);
-    n = !bBool ? n -> getLeftChild() : n -> getRightChild();
-    * _i = bVec.rank(bBool, * _i);
+char WaveletTree::access(int i) {
+  int *_i = new int(i);
+  WaveletNode *n = root;
+
+  while (!n->getLeafValue()) {
+    BitVector<bool> bVec = n->getValue();
+    bool bBool = bVec.access(*_i);
+    n = !bBool ? n->getLeftChild() : n->getRightChild();
+    *_i = bVec.rank(bBool, *_i);
   }
 
-  delete(_i);
-  return n -> getLeafValue();
+  delete (_i);
+  return n->getLeafValue();
 }
 
-int
-rank(char c, int i) {
+int WaveletTree::rank(char c, int i) {
+  int k = 0;
+  int *_i = new int(i);
+  WaveletNode *n = root;
 
+  while (!n->getLeafValue()) {
+    BitVector<bool> bVec = n->getValue();
+    bool bBool = codes[c]->at(k);
+    n = bBool ? n->getRightChild() : n->getLeftChild();
+    *_i = bVec.rank(bBool, *_i);
+    k++;
+  }
+  return *_i;
+}
+
+int WaveletTree::select(char c, int i) {
+  int *_i = new int(i);
+  WaveletNode *n = nullptr;
+
+  // walk down to leaf
+  for (int j=0; j<leaves.size() && !n; j++) {
+    if(leaves[i]->getLeafValue() == c) n = leaves[i];
+  }
+  if(!n) return -1;
+
+  unsigned long k = codes[c]->size() - 1;
+
+  while(n->getParent()){
+    n = n->getParent();
+    BitVector<bool> bVec = n->getValue();
+    bool bBool = codes[c]->at(k);
+    *_i = bVec.select(bBool, *_i);
+    k--;
+  }
+  return *_i;
 }
