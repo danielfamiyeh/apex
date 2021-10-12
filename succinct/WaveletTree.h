@@ -21,7 +21,7 @@ typedef Vertex<BitVector<bool>, char> WaveletNode;
 
 class WaveletTree {
 private:
-  std::unordered_map<char, std::deque<bool>*> codes;
+  std::unordered_map<char, std::deque<bool> *> codes;
   std::vector<WaveletNode *> leaves;
   Vertex<BitVector<bool>, char> *root;
   Vertex<BitVector<bool>, char> *partition(std::string alphabet,
@@ -41,7 +41,8 @@ public:
 
   int rank(char c, int i);
 
-  //    int select(T c, int i);
+  int select(char c, int i);
+
 };
 
 #endif // DNASSEMBLER_WAVELETTREE_H

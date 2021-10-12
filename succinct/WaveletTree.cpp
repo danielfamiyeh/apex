@@ -30,10 +30,8 @@ void printTree(WaveletNode *v) {
 }
 
 WaveletTree::WaveletTree(std::string alphabet, const std::string &str) {
-
   root = partition(std::move(alphabet), str, true);
   inferCodes();
-  print();
 }
 
 WaveletTree::~WaveletTree() { delete (root); }
@@ -136,14 +134,34 @@ int WaveletTree::rank(char c, int i) {
   int *_i = new int(i);
   WaveletNode *n = root;
 
-  std::cout << std::endl;
-
   while (!n->getLeafValue()) {
     BitVector<bool> bVec = n->getValue();
     bool bBool = codes[c]->at(k);
     n = bBool ? n->getRightChild() : n->getLeftChild();
     *_i = bVec.rank(bBool, *_i);
-    k += 1;
+    k++;
+  }
+  return *_i;
+}
+
+int WaveletTree::select(char c, int i) {
+  int *_i = new int(i);
+  WaveletNode *n = nullptr;
+
+  // walk down to leaf
+  for (int j=0; j<leaves.size() && !n; j++) {
+    if(leaves[i]->getLeafValue() == c) n = leaves[i];
+  }
+  if(!n) return -1;
+
+  unsigned long k = codes[c]->size() - 1;
+
+  while(n->getParent()){
+    n = n->getParent();
+    BitVector<bool> bVec = n->getValue();
+    bool bBool = codes[c]->at(k);
+    *_i = bVec.select(bBool, *_i);
+    k--;
   }
   return *_i;
 }
