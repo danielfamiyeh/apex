@@ -32,7 +32,9 @@ template <typename T> int BitVector<T>::select(T c, int i) {
       *index = j;
   }
 
-  return *index;
+  int returnVal = *index;
+  delete index;
+  return returnVal;
 }
 
 template <typename T> void BitVector<T>::pushBack(T c) { vector.push_back(c); }

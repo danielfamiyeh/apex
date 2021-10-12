@@ -29,25 +29,32 @@ void printTree(WaveletNode *v) {
   std::cout << std::endl;
 }
 
-WaveletTree::WaveletTree(std::vector<std::string> alphabet, const std::string
-                                                            &str) {
+void deleteNode(WaveletNode *v) { delete v; }
+
+WaveletTree::WaveletTree(std::vector<std::string> alphabet,
+                         const std::string &str) {
   root = partition(alphabet, str, true);
   inferCodes();
 }
 
-WaveletTree::~WaveletTree() { delete (root); }
+WaveletTree::~WaveletTree() {
+  for (auto & code : codes) {
+    delete code.second;
+  }
+    postorder(root, deleteNode);
+}
 
 WaveletNode *WaveletTree::partition(std::vector<std::string> alphabet,
                                     const std::string &str,
                                     bool start = false) {
   int alphaMidpoint = (int)(alphabet.size() / 2);
-  std::map<std::string , bool> charMap;
+  std::map<std::string, bool> charMap;
   BitVector<bool> bitVector;
   std::vector<char> leftStrVector;
   std::vector<char> rightStrVector;
   std::set<std::string> leftAlpha;
   std::set<std::string> rightAlpha;
-  WaveletNode *v = nullptr;
+  WaveletNode *v;
 
   // Create 0/1 character map
   for (int i = 0; i < alphabet.size(); i++) {
@@ -114,6 +121,14 @@ void WaveletTree::preorder(WaveletNode *v, void (*fun)(WaveletNode *)) {
   preorder(v->getRightChild(), fun);
 }
 
+void WaveletTree::postorder(WaveletNode *v, void (*fun)(WaveletNode *)) {
+  if (!v)
+    return;
+  postorder(v->getLeftChild(), fun);
+  postorder(v->getRightChild(), fun);
+  fun(v);
+}
+
 void WaveletTree::print() { preorder(root, printTree); }
 
 std::string WaveletTree::access(int i) {
@@ -143,7 +158,10 @@ int WaveletTree::rank(std::string c, int i) {
     *_i = bVec.rank(bBool, *_i);
     k++;
   }
-  return *_i;
+
+  int returnVal = *_i;
+  delete _i;
+  return returnVal;
 }
 
 int WaveletTree::select(std::string c, int i) {
@@ -167,5 +185,8 @@ int WaveletTree::select(std::string c, int i) {
     *_i = bVec.select(bBool, *_i);
     k--;
   }
-  return *_i;
+
+  int returnVal = *_i;
+  delete _i;
+  return returnVal;
 }
