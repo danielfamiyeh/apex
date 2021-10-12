@@ -17,31 +17,31 @@
 
 #include "../tree/Vertex.h"
 
-typedef Vertex<BitVector<bool>, char> WaveletNode;
+typedef Vertex<BitVector<bool>, std::string, bool> WaveletNode;
 
-class WaveletTree : public ISuccinctStructure<char>  {
+class WaveletTree : public ISuccinctStructure<std::string>  {
 private:
-  std::unordered_map<char, std::deque<bool> *> codes;
+  std::unordered_map<std::string, std::deque<bool>* > codes;
   std::vector<WaveletNode *> leaves;
-  Vertex<BitVector<bool>, char> *root;
-  Vertex<BitVector<bool>, char> *partition(std::string alphabet,
+  WaveletNode *root;
+  WaveletNode *partition(std::vector<std::string> alphabet,
                                            const std::string &str, bool start);
   void inferCodes();
 
 public:
-  WaveletTree(std::string alphabet, const std::string &str);
+  WaveletTree(std::vector<std::string> alphabet, const std::string &str);
   ~WaveletTree();
 
-  void preorder(Vertex<BitVector<bool>, char> *v,
-                void (*fun)(Vertex<BitVector<bool>, char> *));
+  void preorder(WaveletNode *v,
+                void (*fun)(WaveletNode *));
 
   void print();
 
-  char access(int i) override;
+  std::string access(int i) override;
 
-  int rank(char c, int i) override;
+  int rank(std::string c, int i) override;
 
-  int select(char c, int i) override;
+  int select(std::string c, int i) override;
 
 };
 
