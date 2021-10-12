@@ -14,6 +14,7 @@ private:
   Vertex* right;
   Vertex* parent;
   T* value;
+  T2* leafValue;
   T2* edgeValue;
 
 public:
@@ -23,6 +24,7 @@ public:
   Vertex<T, T2>* getRightChild();
   Vertex<T, T2>* getParent();
   T getValue();
+  T2 getLeafValue();
   T2 getEdgeValue();
 
   void setLeftChild(Vertex<T, T2>* lv);
@@ -30,6 +32,7 @@ public:
   void setParent(Vertex<T, T2>* pv);
   void setValue(T val);
   void setEdgeValue(T2 edgeVal);
+  void setLeafValue(T2 val);
 };
 
 

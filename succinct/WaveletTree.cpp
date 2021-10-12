@@ -3,23 +3,28 @@
 //
 
 #include <map>
+
 #include <utility>
+
 #include <vector>
+
+#include <deque>
+
 #include <iostream>
+
 #include <set>
 
 #include "WaveletTree.h"
 
 void
 printTree(
-  Vertex<BitVector<bool>,
-  char>* v
-  ) {
-  BitVector<bool> val = v->getValue();
-  char c = v->getEdgeValue();
+    WaveletNode * v
+) {
+  BitVector < bool > val = v -> getValue();
+  char c = v -> getLeafValue();
   if (c) std::cout << c;
   else {
-    for (auto &&i: val.getVector()) {
+    for (auto && i: val.getVector()) {
       std::cout << i;
     }
   }
@@ -27,85 +32,127 @@ printTree(
 }
 
 WaveletTree::WaveletTree(
-        std::string alphabet,
-        const std::string& str
-        ) {
+    std::string alphabet,
+    const std::string & str
+) {
+
   root = partition(std::move(alphabet), str, true);
-  print();
+  inferCodes();
+  //print();
 }
 
 WaveletTree::~WaveletTree() {
   delete(root);
 }
 
-Vertex<BitVector<bool>, char>*
+WaveletNode *
 WaveletTree::partition(
-  std::string alphabet,
-  const std::string& str,
-  bool start=false
+    std::string alphabet,
+    const std::string & str,
+    bool start = false
 ) {
-    int alphaMidpoint = (int)(alphabet.size() /2);
-    std::map<char, bool> charMap;
-    BitVector<bool> bitVector;
-    std::vector<char> leftStrVector;
-    std::vector<char> rightStrVector;
-    std::set<char> leftAlpha;
-    std::set<char> rightAlpha;
-    Vertex<BitVector<bool>, char>* v = nullptr;
+  int alphaMidpoint = (int)(alphabet.size() / 2);
+  std::map < char, bool > charMap;
+  BitVector < bool > bitVector;
+  std::vector < char > leftStrVector;
+  std::vector < char > rightStrVector;
+  std::set < char > leftAlpha;
+  std::set < char > rightAlpha;
+  WaveletNode* v = nullptr;
 
-    // Create 0/1 character map
-    for (int i=0; i<alphabet.size(); i++) {
-        charMap[alphabet[i]] = i >= alphaMidpoint;
+  // Create 0/1 character map
+  for (int i = 0; i < alphabet.size(); i++) {
+    charMap[alphabet[i]] = i >= alphaMidpoint;
+    codes[alphabet[i]].push_back(i >= alphaMidpoint);
+  }
+
+  // Covert string to bitVector
+  for (char c: str) {
+    bool val = (bool) charMap[c];
+    bitVector.pushBack(val);
+
+    // Create new child vectors and alphabet
+    if (!val) {
+      leftStrVector.push_back(c);
+      leftAlpha.insert(c);
+    } else {
+      rightStrVector.push_back(c);
+      rightAlpha.insert(c);
     }
+  }
 
-    // Covert string to bitVector
-    for (char c : str) {
-        bool val = (bool) charMap[c];
-        bitVector.pushBack(val);
+  v = new WaveletNode(bitVector);
 
-        // Create new child vectors and alphabet
-        if (!val) {
-            leftStrVector.push_back(c);
-            leftAlpha.insert(c);
-        } else {
-            rightStrVector.push_back(c);
-            rightAlpha.insert(c);
-        }
-    }
-
-    v = new Vertex<BitVector<bool>, char>(bitVector);
-
-    if(alphabet.size() == 1) {
-        v->setEdgeValue(alphabet[0]);
-        return v;
-    }
-
-    // Recurse on children and assign
-   v->setLeftChild(partition(
-            std::string(leftAlpha.begin(), leftAlpha.end()),
-            std::string(leftStrVector.begin(), leftStrVector.end())
-            ));
-
-   v->setRightChild(partition(
-            std::string(rightAlpha.begin(), rightAlpha.end()),
-            std::string(rightStrVector.begin(), rightStrVector.end())
-    ));
-
+  if (alphabet.size() == 1) {
+    v -> setLeafValue(alphabet[0]);
+    leaves.push_back(v);
     return v;
+  }
+
+  // Recurse on children and assign
+  v -> setLeftChild(partition(
+      std::string(leftAlpha.begin(), leftAlpha.end()),
+      std::string(leftStrVector.begin(), leftStrVector.end())
+          ));
+  v -> getLeftChild() -> setEdgeValue(0);
+
+  v -> setRightChild(partition(
+      std::string(rightAlpha.begin(), rightAlpha.end()),
+      std::string(rightStrVector.begin(), rightStrVector.end())
+          ));
+  v -> getRightChild() -> setEdgeValue(1);
+
+  return v;
+}
+
+void
+    WaveletTree::inferCodes() {
+  for (auto current : leaves) {
+      std::deque<bool> code;
+      WaveletNode* v;
+      WaveletNode* n = current;
+
+      while(n->getParent()) {
+        v = n;
+        code.push_front(v->getEdgeValue());
+        n = v->getParent();
+      }
+      codes[current->getLeafValue()] = code;
+    }
 }
 
 void
 WaveletTree::preorder(
-  Vertex<BitVector<bool>, char>* v,
-  void (*fun)(Vertex<BitVector<bool>, char>*)
-        ) {
+    WaveletNode * v,
+    void( * fun)(WaveletNode * )
+) {
   if (!v) return;
   fun(v);
-  preorder(v->getLeftChild(), fun);
-  preorder(v->getRightChild(), fun);
+  preorder(v -> getLeftChild(), fun);
+  preorder(v -> getRightChild(), fun);
 }
 
 void
 WaveletTree::print() {
   preorder(root, printTree);
+}
+
+char
+WaveletTree::access(int i) {
+  int * _i = new int(i);
+  WaveletNode * n = root;
+  while (!n -> getLeafValue()) {
+    BitVector < bool > bVec = n -> getValue();
+    bool bBool = bVec.access( * _i);
+    n = !bBool ? n -> getLeftChild() : n -> getRightChild();
+    * _i = bVec.rank(bBool, * _i);
+  }
+
+  delete(_i);
+  return n -> getLeafValue();
+}
+
+int
+rank(char c, int i) {
+
 }
