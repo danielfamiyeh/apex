@@ -37,7 +37,7 @@ WaveletTree::WaveletTree(
 ) {
 
   root = partition(std::move(alphabet), str, true);
-  getCodes();
+  inferCodes();
   //print();
 }
 
@@ -106,7 +106,7 @@ WaveletTree::partition(
 }
 
 void
-    WaveletTree::getCodes() {
+    WaveletTree::inferCodes() {
   for (auto current : leaves) {
       std::deque<bool> code;
       WaveletNode* v;
@@ -118,11 +118,6 @@ void
         n = v->getParent();
       }
       codes[current->getLeafValue()] = code;
-      std::cout << current->getLeafValue() << ": ";
-      for(auto c : code){
-        std::cout << c;
-      }
-      std::cout << std::endl;
     }
 }
 

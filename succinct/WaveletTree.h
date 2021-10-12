@@ -30,7 +30,7 @@ private:
       const std::string & str, bool start
   );
   void
-  getCodes();
+  inferCodes();
 public:
   WaveletTree(
       std::string alphabet,
