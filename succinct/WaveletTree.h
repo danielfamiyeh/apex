@@ -19,7 +19,7 @@
 
 typedef Vertex<BitVector<bool>, char> WaveletNode;
 
-class WaveletTree {
+class WaveletTree : public ISuccinctStructure<char>  {
 private:
   std::unordered_map<char, std::deque<bool> *> codes;
   std::vector<WaveletNode *> leaves;
@@ -37,11 +37,11 @@ public:
 
   void print();
 
-  char access(int i);
+  char access(int i) override;
 
-  int rank(char c, int i);
+  int rank(char c, int i) override;
 
-  int select(char c, int i);
+  int select(char c, int i) override;
 
 };
 
