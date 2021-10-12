@@ -19,21 +19,22 @@
 
 typedef Vertex<BitVector<bool>, std::string, bool> WaveletNode;
 
-class WaveletTree : public ISuccinctStructure<std::string>  {
+class WaveletTree : public ISuccinctStructure<std::string> {
 private:
-  std::unordered_map<std::string, std::deque<bool>* > codes;
+  std::unordered_map<std::string, std::deque<bool> *> codes;
   std::vector<WaveletNode *> leaves;
   WaveletNode *root;
   WaveletNode *partition(std::vector<std::string> alphabet,
-                                           const std::string &str, bool start);
+                         const std::string &str, bool start);
   void inferCodes();
 
 public:
   WaveletTree(std::vector<std::string> alphabet, const std::string &str);
   ~WaveletTree();
 
-  void preorder(WaveletNode *v,
-                void (*fun)(WaveletNode *));
+  void preorder(WaveletNode *v, void (*fun)(WaveletNode *));
+
+  void postorder(WaveletNode *v, void (*fun)(WaveletNode *));
 
   void print();
 
@@ -42,7 +43,6 @@ public:
   int rank(std::string c, int i) override;
 
   int select(std::string c, int i) override;
-
 };
 
 #endif // DNASSEMBLER_WAVELETTREE_H
