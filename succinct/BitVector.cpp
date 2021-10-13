@@ -51,3 +51,4 @@ template <typename T> std::vector<T> BitVector<T>::getVector() {
 }
 
 template class BitVector<bool>;
+template class BitVector<int>;
