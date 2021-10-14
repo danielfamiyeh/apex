@@ -25,6 +25,8 @@ typedef struct nodeWithEdge {
 BWT::BWT(int _k, const std::string &path) {
   k = _k;
   w = nullptr;
+  last = new BitVector<bool>;
+  first["$"] = 0;
 
   std::ifstream reads(path);
   if (reads.is_open()) {
@@ -42,24 +44,55 @@ BWT::BWT(int _k, const std::string &path) {
       }
     }
 
-    // Co-lex sort
+    // Co-lex sort nodes and W tree
     std::sort(
         nodesWithEdges.begin(), nodesWithEdges.end(),
         [](auto const &a, auto const &b) { return a.nodeLabel < b.nodeLabel; });
-    for (auto & nodesWithEdge : nodesWithEdges) {
+    for (auto &nodesWithEdge : nodesWithEdges) {
       std::reverse(nodesWithEdge.nodeLabel.begin(),
                    nodesWithEdge.nodeLabel.end());
       nodes.push_back(nodesWithEdge.nodeLabel);
       _w.push_back(nodesWithEdge.edgeLabel);
     }
 
-    std::vector<std::string> alphabet{"A", "T", "C", "G", "$", "A-"};
+    std::vector<std::string> alphabet{"A", "T", "C", "G", "$"};
     std::cout << std::string(_w.begin(), _w.end()) << std::endl;
     w = new WaveletTree(alphabet, std::string(_w.begin(), _w.end()));
-    w->print();
 
-    for(int i=0; i<nodes.size(); i++) {
-      std::cout << nodes[i] << " " << _w[i] << std::endl;
+    // F vector
+    for (int i = 0; i < nodes.size() - 1; i++) {
+      last->pushBack(nodes[i] != nodes[i + 1]);
+    }
+    last->pushBack(true);
+
+    // Flag setting
+    for (int i = 0; i < nodes.size(); i++) {
+      flags.emplace_back(false);
+      if(i > 0) {
+        for (int j = 0; j < i; j++) {
+          if (w->access(j) == w->access(i) &&
+              nodes[j].substr(1, k - 1) == nodes[i].substr(1, k - 1)) {
+            *flags[i].state = true;
+            *flags[i].index = j;
+          }
+        }
+
+        // F vector
+        std::string after = nodes[i].substr(k-1, 1);
+        if(after != nodes[i-1].substr(k-1, 1)) {
+          first[after] = i;
+        }
+      }
+    }
+
+
+    std::cout << "last "
+              << "Nodes "
+              << "W" << std::endl;
+
+    for (int i = 0; i < nodes.size(); i++) {
+      std::cout << last->access(i) << " " << nodes[i] << " " << w->access(i)
+                << (*flags[i].state ? "-" : "") << std::endl;
     }
   } else {
     std::cout << "Could not open file " << path << ".\n";
