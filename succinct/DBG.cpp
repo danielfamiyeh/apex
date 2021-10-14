@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "BWT.h"
+#include "DBG.h"
 
 // For co-lex. sorting node matrix with edge label vector
 typedef struct nodeWithEdge {
@@ -22,11 +22,11 @@ typedef struct nodeWithEdge {
   char edgeLabel;
 } nodeWithEdge_t;
 
-BWT::BWT(int _k, const std::string &path) {
-  k = _k;
+DBG::DBG(int k, const std::string &path) {
   w = nullptr;
   last = new BitVector<bool>;
   first["$"] = 0;
+  std::vector<std::string> nodes;
 
   std::ifstream reads(path);
   if (reads.is_open()) {
@@ -39,8 +39,16 @@ BWT::BWT(int _k, const std::string &path) {
 
       for (int i = 0; i < read.size() - (k); i++) {
         std::string kmer = read.substr(i, k);
+        char edgeLabel = read[k + i];
         std::reverse(kmer.begin(), kmer.end());
-        nodesWithEdges.emplace_back(kmer, read[k + i]);
+        bool exists = std::find_if(nodesWithEdges.begin(), nodesWithEdges.end(),
+                     [&edgeLabel, &kmer](const nodeWithEdge &nwe) -> bool {
+                       return nwe.nodeLabel == kmer &&
+                              nwe.edgeLabel == edgeLabel;
+                     }) != nodesWithEdges.end();
+
+        if(!exists)
+          nodesWithEdges.emplace_back(kmer, edgeLabel);
       }
     }
 
@@ -56,7 +64,7 @@ BWT::BWT(int _k, const std::string &path) {
     }
 
     std::vector<std::string> alphabet{"A", "T", "C", "G", "$"};
-    std::cout << std::string(_w.begin(), _w.end()) << std::endl;
+//    std::cout << std::string(_w.begin(), _w.end()) << std::endl;
     w = new WaveletTree(alphabet, std::string(_w.begin(), _w.end()));
 
     // F vector
@@ -68,7 +76,7 @@ BWT::BWT(int _k, const std::string &path) {
     // Flag setting
     for (int i = 0; i < nodes.size(); i++) {
       flags.emplace_back(false);
-      if(i > 0) {
+      if (i > 0) {
         for (int j = 0; j < i; j++) {
           if (w->access(j) == w->access(i) &&
               nodes[j].substr(1, k - 1) == nodes[i].substr(1, k - 1)) {
@@ -78,23 +86,46 @@ BWT::BWT(int _k, const std::string &path) {
         }
 
         // F vector
-        std::string after = nodes[i].substr(k-1, 1);
-        if(after != nodes[i-1].substr(k-1, 1)) {
+        std::string after = nodes[i].substr(k - 1, 1);
+        if (after != nodes[i - 1].substr(k - 1, 1)) {
           first[after] = i;
         }
       }
     }
 
-
-    std::cout << "last "
-              << "Nodes "
-              << "W" << std::endl;
-
-    for (int i = 0; i < nodes.size(); i++) {
-      std::cout << last->access(i) << " " << nodes[i] << " " << w->access(i)
-                << (*flags[i].state ? "-" : "") << std::endl;
-    }
+    //    std::cout << "L"
+    //              << "Nodes "
+    //              << "W" << std::endl;
+    //
+//    for (int i = 0; i < nodes.size(); i++) {
+//      std::cout << last->access(i) << " " << nodes[i] << " " << w->access(i)
+//                << (*flags[i].state ? "-" : "") << std::endl;
+//    }
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }
+}
+
+int DBG::forward(int u) {
+  std::string c = w->access(u);
+  int r = w->rank(c, u);
+  int x = first[c] + r - 1;
+  int v = last->select(true, x);
+
+  return v;
+}
+
+int DBG::backward(int v) {
+  int x = last->rank(true, v);
+  std::string c;
+  for (auto &it : first) {
+    if (x >= it.second) {
+      c = it.first;
+    }
+  }
+
+  int r = x - first[c] + 1;
+  int u = w->select(c, r);
+
+  return u;
 }
