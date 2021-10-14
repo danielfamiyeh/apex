@@ -128,3 +128,7 @@ int DBG::backward(int v) {
 
   return u;
 }
+
+int DBG::outdegree(int v) {
+  return last->select(true, v-1) - last->select(true, v-2);
+}

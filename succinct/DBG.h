@@ -39,6 +39,8 @@ public:
   int forward(int u);
   int backward(int v);
   ~DBG();
+
+  int outdegree(int v);
 };
 
 #endif // DNASSEMBLER_DBG_H
