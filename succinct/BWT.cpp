@@ -64,14 +64,16 @@ BWT::BWT(int _k, const std::string &path) {
     }
     last->pushBack(true);
 
+    // Flag setting
     for (int i = 0; i < nodes.size(); i++)
-      flags.push_back(false);
+      flags.emplace_back(false);
 
     for (int i = 1; i < nodes.size(); i++) {
       for (int j = 0; j < i; j++) {
         if (w->access(j) == w->access(i) &&
             nodes[j].substr(1, k - 1) == nodes[i].substr(1, k - 1)) {
-          flags[i] = true;
+          *flags[i].state = true;
+          *flags[i].index = j;
         }
       }
     }
@@ -82,7 +84,7 @@ BWT::BWT(int _k, const std::string &path) {
 
     for (int i = 0; i < nodes.size(); i++) {
       std::cout << last->access(i) << " " << nodes[i] << " " << w->access(i)
-                << (flags[i] ? "-" : "") << std::endl;
+                << (*flags[i].state ? "-" : "") << std::endl;
     }
   } else {
     std::cout << "Could not open file " << path << ".\n";
