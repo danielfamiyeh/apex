@@ -38,10 +38,10 @@ WaveletTree::WaveletTree(std::vector<std::string> alphabet,
 }
 
 WaveletTree::~WaveletTree() {
-  for (auto & code : codes) {
+  for (auto &code : codes) {
     delete code.second;
   }
-    postorder(root, deleteNode);
+  postorder(root, deleteNode);
 }
 
 WaveletNode *WaveletTree::partition(std::vector<std::string> alphabet,
@@ -170,8 +170,9 @@ int WaveletTree::select(std::string c, int i) {
 
   // walk down to leaf
   for (int j = 0; j < leaves.size() && !n; j++) {
-    if (leaves[i]->getLeafValue() == c)
-      n = leaves[i];
+    if (leaves[j]->getLeafValue() == c) {
+      n = leaves[j];
+    }
   }
   if (!n)
     return -1;
