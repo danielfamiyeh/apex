@@ -25,7 +25,7 @@ typedef struct nodeWithEdge {
 BWT::BWT(int _k, const std::string &path) {
   k = _k;
   w = nullptr;
-  first = new BitVector<bool>;
+  last = new BitVector<bool>;
 
   std::ifstream reads(path);
   if (reads.is_open()) {
@@ -43,11 +43,11 @@ BWT::BWT(int _k, const std::string &path) {
       }
     }
 
-    // Co-lex sort
+    // Co-lex sort nodes and W tree
     std::sort(
         nodesWithEdges.begin(), nodesWithEdges.end(),
         [](auto const &a, auto const &b) { return a.nodeLabel < b.nodeLabel; });
-    for (auto & nodesWithEdge : nodesWithEdges) {
+    for (auto &nodesWithEdge : nodesWithEdges) {
       std::reverse(nodesWithEdge.nodeLabel.begin(),
                    nodesWithEdge.nodeLabel.end());
       nodes.push_back(nodesWithEdge.nodeLabel);
@@ -57,13 +57,33 @@ BWT::BWT(int _k, const std::string &path) {
     std::vector<std::string> alphabet{"A", "T", "C", "G", "$"};
     std::cout << std::string(_w.begin(), _w.end()) << std::endl;
     w = new WaveletTree(alphabet, std::string(_w.begin(), _w.end()));
-    w->print();
 
-    for(int i=0; i<nodes.size()-1; i++) {
-      first->pushBack(nodes[i] != nodes[i+1]);
+    // F vector
+    for (int i = 0; i < nodes.size() - 1; i++) {
+      last->pushBack(nodes[i] != nodes[i + 1]);
     }
-    first->pushBack(true);
+    last->pushBack(true);
 
+    for (int i = 0; i < nodes.size(); i++)
+      flags.push_back(false);
+
+    for (int i = 1; i < nodes.size(); i++) {
+      for (int j = 0; j < i; j++) {
+        if (w->access(j) == w->access(i) &&
+            nodes[j].substr(1, k - 1) == nodes[i].substr(1, k - 1)) {
+          flags[i] = true;
+        }
+      }
+    }
+
+    std::cout << "F "
+              << "Nodes "
+              << "W" << std::endl;
+
+    for (int i = 0; i < nodes.size(); i++) {
+      std::cout << last->access(i) << " " << nodes[i] << " " << w->access(i)
+                << (flags[i] ? "-" : "") << std::endl;
+    }
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }

@@ -18,7 +18,8 @@ class BWT {
 private:
   int k;
   std::vector<std::string> nodes;
-  BitVector<bool> *first;
+  std::vector<bool> flags;
+  BitVector<bool> *last;
   WaveletTree *w;
 
 public:
