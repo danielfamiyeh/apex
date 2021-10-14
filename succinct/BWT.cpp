@@ -26,6 +26,7 @@ BWT::BWT(int _k, const std::string &path) {
   k = _k;
   w = nullptr;
   last = new BitVector<bool>;
+  first["$"] = 0;
 
   std::ifstream reads(path);
   if (reads.is_open()) {
@@ -65,20 +66,27 @@ BWT::BWT(int _k, const std::string &path) {
     last->pushBack(true);
 
     // Flag setting
-    for (int i = 0; i < nodes.size(); i++)
+    for (int i = 0; i < nodes.size(); i++) {
       flags.emplace_back(false);
+      if(i > 0) {
+        for (int j = 0; j < i; j++) {
+          if (w->access(j) == w->access(i) &&
+              nodes[j].substr(1, k - 1) == nodes[i].substr(1, k - 1)) {
+            *flags[i].state = true;
+            *flags[i].index = j;
+          }
+        }
 
-    for (int i = 1; i < nodes.size(); i++) {
-      for (int j = 0; j < i; j++) {
-        if (w->access(j) == w->access(i) &&
-            nodes[j].substr(1, k - 1) == nodes[i].substr(1, k - 1)) {
-          *flags[i].state = true;
-          *flags[i].index = j;
+        // F vector
+        std::string after = nodes[i].substr(k-1, 1);
+        if(after != nodes[i-1].substr(k-1, 1)) {
+          first[after] = i;
         }
       }
     }
 
-    std::cout << "F "
+
+    std::cout << "last "
               << "Nodes "
               << "W" << std::endl;
 
