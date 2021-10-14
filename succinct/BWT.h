@@ -9,16 +9,30 @@
 
 #include <string>
 
+#include <map>
+
 #include "BitVector.h"
 
 #include "WaveletTree.h"
 
 class BWT {
 
+typedef struct flag {
+    explicit flag(bool State, int Index=-1){
+      state = new bool(State);
+      index = new int(Index);
+    }
+
+    bool *state;
+    int *index;
+} flag_t;
+
 private:
   int k;
   std::vector<std::string> nodes;
-  BitVector<int> first;
+  std::vector<flag_t> flags;
+  std::map<std::string, int> first;
+  BitVector<bool> *last;
   WaveletTree *w;
 
 public:
