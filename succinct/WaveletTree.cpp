@@ -148,7 +148,7 @@ std::string WaveletTree::access(int i) {
 
 int WaveletTree::rank(std::string c, int i) {
   int k = 0;
-  int *_i = new int(i);
+  int *_i = new int(i+1);
   WaveletNode *n = root;
 
   while (n->getLeafValue().empty()) {
@@ -165,7 +165,7 @@ int WaveletTree::rank(std::string c, int i) {
 }
 
 int WaveletTree::select(std::string c, int i) {
-  int *_i = new int(i);
+  int *_i = new int(i-1);
   WaveletNode *n = nullptr;
 
   // walk down to leaf

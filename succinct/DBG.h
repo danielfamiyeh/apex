@@ -35,7 +35,7 @@ private:
   WaveletTree *w;
 
 public:
-  DBG(int _k, const std::string &path);
+  DBG(int k, const std::string &path);
   int forward(int u);
   int backward(int v);
   ~DBG();

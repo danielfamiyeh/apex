@@ -22,8 +22,7 @@ typedef struct nodeWithEdge {
   char edgeLabel;
 } nodeWithEdge_t;
 
-DBG::DBG(int _k, const std::string &path) {
-  k = _k;
+DBG::DBG(int k, const std::string &path) {
   w = nullptr;
   last = new BitVector<bool>;
   first["$"] = 0;
@@ -40,8 +39,16 @@ DBG::DBG(int _k, const std::string &path) {
 
       for (int i = 0; i < read.size() - (k); i++) {
         std::string kmer = read.substr(i, k);
+        char edgeLabel = read[k + i];
         std::reverse(kmer.begin(), kmer.end());
-        nodesWithEdges.emplace_back(kmer, read[k + i]);
+        bool exists = std::find_if(nodesWithEdges.begin(), nodesWithEdges.end(),
+                     [&edgeLabel, &kmer](const nodeWithEdge &nwe) -> bool {
+                       return nwe.nodeLabel == kmer &&
+                              nwe.edgeLabel == edgeLabel;
+                     }) != nodesWithEdges.end();
+
+        if(!exists)
+          nodesWithEdges.emplace_back(kmer, edgeLabel);
       }
     }
 
@@ -57,7 +64,7 @@ DBG::DBG(int _k, const std::string &path) {
     }
 
     std::vector<std::string> alphabet{"A", "T", "C", "G", "$"};
-    std::cout << std::string(_w.begin(), _w.end()) << std::endl;
+//    std::cout << std::string(_w.begin(), _w.end()) << std::endl;
     w = new WaveletTree(alphabet, std::string(_w.begin(), _w.end()));
 
     // F vector
@@ -90,10 +97,10 @@ DBG::DBG(int _k, const std::string &path) {
     //              << "Nodes "
     //              << "W" << std::endl;
     //
-        for (int i = 0; i < nodes.size(); i++) {
-          std::cout << last->access(i) << " " << nodes[i] << " " << w->access(i)
-                    << (*flags[i].state ? "-" : "") << std::endl;
-        }
+//    for (int i = 0; i < nodes.size(); i++) {
+//      std::cout << last->access(i) << " " << nodes[i] << " " << w->access(i)
+//                << (*flags[i].state ? "-" : "") << std::endl;
+//    }
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }
