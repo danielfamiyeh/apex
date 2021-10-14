@@ -15,10 +15,20 @@
 
 class BWT {
 
+typedef struct flag {
+    flag(bool State, int Index=-1){
+      state = new bool(State);
+      index = new int(Index);
+    }
+
+    bool *state;
+    int *index;
+} flag_t;
+
 private:
   int k;
   std::vector<std::string> nodes;
-  std::vector<bool> flags;
+  std::vector<flag_t> flags;
   BitVector<bool> *last;
   WaveletTree *w;
 
