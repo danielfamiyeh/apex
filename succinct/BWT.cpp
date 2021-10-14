@@ -25,6 +25,7 @@ typedef struct nodeWithEdge {
 BWT::BWT(int _k, const std::string &path) {
   k = _k;
   w = nullptr;
+  first = new BitVector<bool>;
 
   std::ifstream reads(path);
   if (reads.is_open()) {
@@ -53,14 +54,16 @@ BWT::BWT(int _k, const std::string &path) {
       _w.push_back(nodesWithEdge.edgeLabel);
     }
 
-    std::vector<std::string> alphabet{"A", "T", "C", "G", "$", "A-"};
+    std::vector<std::string> alphabet{"A", "T", "C", "G", "$"};
     std::cout << std::string(_w.begin(), _w.end()) << std::endl;
     w = new WaveletTree(alphabet, std::string(_w.begin(), _w.end()));
     w->print();
 
-    for(int i=0; i<nodes.size(); i++) {
-      std::cout << nodes[i] << " " << _w[i] << std::endl;
+    for(int i=0; i<nodes.size()-1; i++) {
+      first->pushBack(nodes[i] != nodes[i+1]);
     }
+    first->pushBack(true);
+
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }
