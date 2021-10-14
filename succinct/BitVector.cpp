@@ -22,7 +22,7 @@ template <typename T> int BitVector<T>::rank(T c, int i) {
 }
 
 template <typename T> int BitVector<T>::select(T c, int i) {
-  int *index = new int(-1);
+  int *index = new int(0);
   int count = -1;
 
   for (int j = 0; j < vector.size() && count < i; j++) {
