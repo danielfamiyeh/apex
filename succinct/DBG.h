@@ -36,11 +36,13 @@ private:
 
 public:
   DBG(int k, const std::string &path);
-  int forward(int u);
+  int forward(int u, bool isOutgoing=false);
   int backward(int v);
   ~DBG();
 
   int outdegree(int v);
+  int outgoing(int v, std::string c);
+  int indegree(int v);
 };
 
 #endif // DNASSEMBLER_DBG_H
