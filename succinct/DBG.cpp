@@ -41,13 +41,14 @@ DBG::DBG(int k, const std::string &path) {
         std::string kmer = read.substr(i, k);
         char edgeLabel = read[k + i];
         std::reverse(kmer.begin(), kmer.end());
-        bool exists = std::find_if(nodesWithEdges.begin(), nodesWithEdges.end(),
-                     [&edgeLabel, &kmer](const nodeWithEdge &nwe) -> bool {
-                       return nwe.nodeLabel == kmer &&
-                              nwe.edgeLabel == edgeLabel;
-                     }) != nodesWithEdges.end();
+        bool exists =
+            std::find_if(nodesWithEdges.begin(), nodesWithEdges.end(),
+                         [&edgeLabel, &kmer](const nodeWithEdge &nwe) -> bool {
+                           return nwe.nodeLabel == kmer &&
+                                  nwe.edgeLabel == edgeLabel;
+                         }) != nodesWithEdges.end();
 
-        if(!exists)
+        if (!exists)
           nodesWithEdges.emplace_back(kmer, edgeLabel);
       }
     }
@@ -64,7 +65,7 @@ DBG::DBG(int k, const std::string &path) {
     }
 
     std::vector<std::string> alphabet{"A", "T", "C", "G", "$"};
-//    std::cout << std::string(_w.begin(), _w.end()) << std::endl;
+    //    std::cout << std::string(_w.begin(), _w.end()) << std::endl;
     w = new WaveletTree(alphabet, std::string(_w.begin(), _w.end()));
 
     // F vector
@@ -93,21 +94,19 @@ DBG::DBG(int k, const std::string &path) {
       }
     }
 
-    //    std::cout << "L"
-    //              << "Nodes "
-    //              << "W" << std::endl;
-    //
-//    for (int i = 0; i < nodes.size(); i++) {
-//      std::cout << last->access(i) << " " << nodes[i] << " " << w->access(i)
-//                << (*flags[i].state ? "-" : "") << std::endl;
-//    }
+    //    for (int i = 0; i < nodes.size(); i++) {
+    //      std::cout << last->access(i) << " " << nodes[i] << " " <<
+    //      w->access(i)
+    //                << (*flags[i].state ? "-" : "") << std::endl;
+    //    }
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }
 }
 
 int DBG::forward(int u) {
-  std::string c = w->access(u);
+  // if W[u] ∈ A⁻ get equivalent in A
+  std::string c = w->access(*flags[u].state ? *flags[u].index : u);
   int r = w->rank(c, u);
   int x = first[c] + r - 1;
   int v = last->select(true, x);
