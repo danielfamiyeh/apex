@@ -104,10 +104,12 @@ DBG::DBG(int k, const std::string &path) {
   }
 }
 
-int DBG::forward(int u) {
+int DBG::forward(int u, bool isOutgoing) {
   // if W[u] ∈ A⁻ get equivalent in A
-  std::string c = w->access(*flags[u].state ? *flags[u].index : u);
-  int r = w->rank(c, u);
+  std::string c = w->access(*flags[u].state && !isOutgoing ? *flags[u].index : u);
+  // ignore edge if L[i] == 0
+  int _u = !last->access(u) ? last->select(true, last->rank(true, u)) : u;
+  int r = w->rank(c, _u);
   int x = first[c] + r - 1;
   int v = last->select(true, x);
 
@@ -125,10 +127,18 @@ int DBG::backward(int v) {
 
   int r = x - first[c] + 1;
   int u = w->select(c, r);
+  // ignore edge if L[i] == 0
+  int _u = !last->access(u) ? last->select(true, last->rank(true, u)) : u;
 
-  return u;
+  return _u;
 }
 
 int DBG::outdegree(int v) {
   return last->select(true, v-1) - last->select(true, v-2);
+}
+int DBG::outgoing(int v, std::string c) {
+  int r = w->rank(c, v);
+  std::cout << r;
+  int idx = w->select(c, r);
+  return idx;
 }
