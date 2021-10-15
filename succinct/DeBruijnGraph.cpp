@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "DBG.h"
+#include "DeBruijnGraph.h"
 
 // For co-lex. sorting node matrix with edge label vector
 typedef struct nodeWithEdge {
@@ -22,7 +22,7 @@ typedef struct nodeWithEdge {
   char edgeLabel;
 } nodeWithEdge_t;
 
-DBG::DBG(int k, const std::string &path) {
+DeBruijnGraph::DeBruijnGraph(int k, const std::string &path) {
   w = nullptr;
   last = new BitVector<bool>;
   first["$"] = 0;
@@ -82,7 +82,8 @@ DBG::DBG(int k, const std::string &path) {
           if (w->access(j) == w->access(i) &&
               nodes[j].substr(1, k - 1) == nodes[i].substr(1, k - 1)) {
             *flags[i].state = true;
-            *flags[i].index = j;
+            *flags[i].indexTo = j;
+            *flags[j].indexFrom = i;
           }
         }
 
@@ -94,51 +95,46 @@ DBG::DBG(int k, const std::string &path) {
       }
     }
 
-    //    for (int i = 0; i < nodes.size(); i++) {
-    //      std::cout << last->access(i) << " " << nodes[i] << " " <<
-    //      w->access(i)
-    //                << (*flags[i].state ? "-" : "") << std::endl;
-    //    }
+//            for (int i = 0; i < nodes.size(); i++) {
+//              std::cout << last->access(i) << " " << nodes[i] << " " <<
+//              w->access(i)
+//                        << (*flags[i].state ? "-" : "") << std::endl;
+//            }
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }
 }
 
-int DBG::forward(int u, bool isOutgoing) {
-  // if W[u] ∈ A⁻ get equivalent in A
-  std::string c = w->access(*flags[u].state && !isOutgoing ? *flags[u].index : u);
-  // ignore edge if L[i] == 0
-  int _u = !last->access(u) ? last->select(true, last->rank(true, u)) : u;
-  int r = w->rank(c, _u);
-  int x = first[c] + r - 1;
-  int v = last->select(true, x);
+int DeBruijnGraph::forward(int u, bool isOutgoing) {
+  std::string c = w->access(u);
+  int *_u = new int(*flags[u].state && !isOutgoing ? *flags[u].indexTo : u);
+  int *rankC = new int(w->rank(c, *_u));
 
-  return v;
-}
-
-int DBG::backward(int v) {
-  int x = last->rank(true, v);
-  std::string c;
-  for (auto &it : first) {
-    if (x >= it.second) {
-      c = it.first;
+  /*
+   * Since flags and edge labels are stored in separate structures
+   * once W.rank(c, *_u) is calculated, traverse the interval [0,*_u)
+   * if W[i] == c and a flag is set at i then W[i] ∈ A⁻ ==> W[i] != c
+   * so decrement rankC since it was counted in W.rank(c, *_u) originally.
+   */
+  for(int i=0; i<*_u; i++) {
+    if(*flags[i].state && w->access(i) == c) {
+      *rankC -= 1;
     }
   }
 
-  int r = x - first[c] + 1;
-  int u = w->select(c, r);
-  // ignore edge if L[i] == 0
-  int _u = !last->access(u) ? last->select(true, last->rank(true, u)) : u;
+  int startPosition = first[c];
+  int rankToBase = last->rank(true, startPosition);
+  int nodeIndex = last->select(true, (*rankC + rankToBase));
 
-  return _u;
+
+  return nodeIndex ? nodeIndex : -1;
 }
 
-int DBG::outdegree(int v) {
-  return last->select(true, v-1) - last->select(true, v-2);
+int DeBruijnGraph::backward(int v) {
+
+  return -1;
 }
-int DBG::outgoing(int v, std::string c) {
-  int r = w->rank(c, v);
-  std::cout << r;
-  int idx = w->select(c, r);
-  return idx;
+
+int DeBruijnGraph::outdegree(int v) {
+  return last->select(true, v - 1) - last->select(true, v - 2);
 }

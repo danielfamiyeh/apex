@@ -2,8 +2,8 @@
 // Created by daniel on 13/10/2021.
 //
 
-#ifndef DNASSEMBLER_DBG_H
-#define DNASSEMBLER_DBG_H
+#ifndef DNASSEMBLER_DEBRUIJNGRAPH_H
+#define DNASSEMBLER_DEBRUIJNGRAPH_H
 
 #include <vector>
 
@@ -15,16 +15,18 @@
 
 #include "WaveletTree.h"
 
-class DBG {
+class DeBruijnGraph {
 
   typedef struct flag {
-    explicit flag(bool State, int Index = -1) {
+    explicit flag(bool State, int IndexTo = -1, int IndexFrom = -1) {
       state = new bool(State);
-      index = new int(Index);
+      indexTo = new int(IndexTo);
+      indexFrom = new int(IndexFrom);
     }
 
     bool *state;
-    int *index;
+    int *indexTo;
+    int *indexFrom;
   } flag_t;
 
 private:
@@ -35,14 +37,14 @@ private:
   WaveletTree *w;
 
 public:
-  DBG(int k, const std::string &path);
+  DeBruijnGraph(int k, const std::string &path);
   int forward(int u, bool isOutgoing=false);
   int backward(int v);
-  ~DBG();
+  ~DeBruijnGraph();
 
   int outdegree(int v);
-  int outgoing(int v, std::string c);
+  int outgoing(int v, const std::string& c);
   int indegree(int v);
 };
 
-#endif // DNASSEMBLER_DBG_H
+#endif // DNASSEMBLER_DEBRUIJNGRAPH_H
