@@ -20,6 +20,8 @@ private:
 public:
   BitVector();
 
+  BitVector(T data[], int n);
+
   T access(int i);
 
   int rank(T c, int i);
