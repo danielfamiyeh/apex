@@ -95,11 +95,11 @@ DeBruijnGraph::DeBruijnGraph(int k, const std::string &path) {
       }
     }
 
-//            for (int i = 0; i < nodes.size(); i++) {
-//              std::cout << last->access(i) << " " << nodes[i] << " " <<
-//              w->access(i)
-//                        << (*flags[i].state ? "-" : "") << std::endl;
-//            }
+    //            for (int i = 0; i < nodes.size(); i++) {
+    //              std::cout << last->access(i) << " " << nodes[i] << " " <<
+    //              w->access(i)
+    //                        << (*flags[i].state ? "-" : "") << std::endl;
+    //            }
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }
@@ -116,8 +116,8 @@ int DeBruijnGraph::forward(int u, bool isOutgoing) {
    * if W[i] == c and a flag is set at i then W[i] ∈ A⁻ ==> W[i] != c
    * so decrement rankC since it was counted in W.rank(c, *_u) originally.
    */
-  for(int i=0; i<*_u; i++) {
-    if(*flags[i].state && w->access(i) == c) {
+  for (int i = 0; i < *_u; i++) {
+    if (*flags[i].state && w->access(i) == c) {
       *rankC -= 1;
     }
   }
@@ -135,16 +135,37 @@ int DeBruijnGraph::forward(int u, bool isOutgoing) {
 int DeBruijnGraph::backward(int v) {
   std::string c = new char('$');
 
-  for(auto &it: first) {
-    if(v >= it.second) c = it.first;
+  for (auto &it : first) {
+    if (v >= it.second)
+      c = it.first;
   }
 
   int rankToBase = last->rank(true, first[c]);
   int rankToCurrentEdge = last->rank(true, (v));
   int index = rankToCurrentEdge - rankToBase;
-  int edge = w->select(c, index);
 
-  std::cout << rankToBase << " " << rankToCurrentEdge << " " << index;
+  /*
+   * When calculating the edge index, w.select() won't take into
+   * account flagged edges. We define an offset and increment for every
+   * flagged c over the interval [0, w.select(c, index)).
+   * This ensures that we skip past flagged edges on the final
+   * select call.
+   */
+
+  int *indexOffset = new int(0);
+  for (int i = 0; i < w->select(c, index+1); i++) {
+    if (*flags[i].state && w->access(i) == c) {
+      std::cout << "FLAGGED: " << w->access(i) << i << flags[i].state << "\n";
+      *indexOffset += 1;
+    }
+  }
+
+  int edge = w->select(c, index + *indexOffset);
+
+  std::cout << v << ": c=" << c << " r2b=" << rankToBase << " r2ce=" <<
+      rankToCurrentEdge
+            << " idx=" << index << " idxOffset=" << *indexOffset << " edgeIdx="
+            << edge << "\n";
 
   return edge;
 }

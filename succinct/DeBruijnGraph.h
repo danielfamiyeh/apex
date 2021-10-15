@@ -18,7 +18,7 @@
 class DeBruijnGraph {
 
   typedef struct flag {
-    explicit flag(bool State, int IndexTo = -1, int IndexFrom = -1) {
+    explicit flag(bool State=false, int IndexTo = -1, int IndexFrom = -1) {
       state = new bool(State);
       indexTo = new int(IndexTo);
       indexFrom = new int(IndexFrom);
