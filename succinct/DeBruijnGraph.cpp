@@ -126,13 +126,27 @@ int DeBruijnGraph::forward(int u, bool isOutgoing) {
   int rankToBase = last->rank(true, startPosition);
   int nodeIndex = last->select(true, (*rankC + rankToBase));
 
+  delete _u;
+  delete rankC;
 
-  return nodeIndex ? nodeIndex : -1;
+  return nodeIndex;
 }
 
 int DeBruijnGraph::backward(int v) {
+  std::string c = new char('$');
 
-  return -1;
+  for(auto &it: first) {
+    if(v >= it.second) c = it.first;
+  }
+
+  int rankToBase = last->rank(true, first[c]);
+  int rankToCurrentEdge = last->rank(true, (v));
+  int index = rankToCurrentEdge - rankToBase;
+  int edge = w->select(c, index);
+
+  std::cout << rankToBase << " " << rankToCurrentEdge << " " << index;
+
+  return edge;
 }
 
 int DeBruijnGraph::outdegree(int v) {
