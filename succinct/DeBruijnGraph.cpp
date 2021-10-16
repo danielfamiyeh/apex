@@ -217,7 +217,7 @@ std::string DeBruijnGraph::label(int v) {
       }
     }
 
-    for (int i = 1; i < k; i++) {
+    for (int i = 1; i < k && *edgeIndex != 0; i++) {
       *edgeIndex = backward(*edgeIndex);
       for (auto &it : first) {
         if (*edgeIndex >= it.second) {
@@ -225,6 +225,8 @@ std::string DeBruijnGraph::label(int v) {
         }
       }
     }
+    if (*edgeIndex == 0)
+      label[k - 1] = '$';
     std::reverse(label.begin(), label.end());
   }
 
@@ -237,7 +239,7 @@ int DeBruijnGraph::indegree(int v) {
   int flaggedRank2 = 0;
   int firstIncomingEdge = backward(last->select(true, v));
 
-  if(v >= first["A"]) {
+  if (v >= first["A"]) {
     std::string firstIncomingEdgeLabel = w->access(firstIncomingEdge);
 
     int *nonFlaggedEdge = new int(-1);
@@ -263,4 +265,22 @@ int DeBruijnGraph::indegree(int v) {
     return (flaggedRank2 - flaggedRank1) + 1;
   }
   return 0;
+}
+
+int DeBruijnGraph::incoming(int v, std::string c) {
+  int index = last->select(true, v);
+  int rangeStart = backward(index);
+  int rangeEnd = rangeStart + (indegree(v) + 1);
+  std::string nodeLabel = label(v);
+
+  for (int i = rangeStart; i < rangeEnd; i++) {
+    if (w->access(i)[0] == nodeLabel[k - 1]) {
+      int rankToI = last->rank(true, i);
+      std::string _label = label(rankToI);
+
+      if (_label[0] == c[0])
+        return rankToI;
+    }
+  }
+  return -1;
 }
