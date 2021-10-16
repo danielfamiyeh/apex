@@ -112,7 +112,7 @@ int DeBruijnGraph::forward(int u, bool isOutgoing) {
 
   /*
    * Since flags and edge labels are stored in separate structures
-   * once W.rank(c, *_u) is calculated, traverse the interval [0,*_u)
+   * once W.rank(c, *_u) is calculated, traverse the interval [0, _u)
    * if W[i] == c and a flag is set at i then W[i] ∈ A⁻ ==> W[i] != c
    * so decrement rankC since it was counted in W.rank(c, *_u) originally.
    */
@@ -147,29 +147,55 @@ int DeBruijnGraph::backward(int v) {
   /*
    * When calculating the edge index, w.select() won't take into
    * account flagged edges. We define an offset and increment for every
-   * flagged c over the interval [0, w.select(c, index)).
+   * flagged c over the interval [0, w.select(c, index+ 1)).
    * This ensures that we skip past flagged edges on the final
    * select call.
    */
 
   int *indexOffset = new int(0);
-  for (int i = 0; i < w->select(c, index+1); i++) {
+  for (int i = 0; i < w->select(c, index + 1); i++) {
     if (*flags[i].state && w->access(i) == c) {
-      std::cout << "FLAGGED: " << w->access(i) << i << flags[i].state << "\n";
       *indexOffset += 1;
     }
   }
 
   int edge = w->select(c, index + *indexOffset);
-
-  std::cout << v << ": c=" << c << " r2b=" << rankToBase << " r2ce=" <<
-      rankToCurrentEdge
-            << " idx=" << index << " idxOffset=" << *indexOffset << " edgeIdx="
-            << edge << "\n";
-
   return edge;
 }
 
 int DeBruijnGraph::outdegree(int v) {
-  return last->select(true, v - 1) - last->select(true, v - 2);
+  return last->select(true, v) - last->select(true, v - 1);
+}
+
+int DeBruijnGraph::outgoing(int v, const std::string &c) {
+  int *x = new int(w->select(c, w->rank(c, v)));
+  int *nodeIndex = new int(last->select(true, v));
+  int *nodeIndexBefore = new int(last->select(true, v - 1));
+  bool *edgeExists = new bool(false);
+
+  if (*x > *nodeIndexBefore && *x <= *nodeIndex) *edgeExists = true;
+  else {
+    int *_v = new int(-1);
+    for(int i=(v-1); i>=0; i--) {
+      if(*flags[i].state != *flags[v].state && w->access(i) == w->access(v)) {
+        *_v = i;
+        break;
+      }
+    }
+    *x = w->select(c, w->rank(c, *_v));
+    *nodeIndex = last->select(true, *_v);
+    *nodeIndexBefore = last->select(true, *_v - 1);
+
+
+    if (*x > *nodeIndexBefore && *x <= *nodeIndex) *edgeExists = true;
+  }
+  int edge = *x;
+  bool _edgeExists = *edgeExists;
+
+  delete x;
+  delete nodeIndex;
+  delete nodeIndexBefore;
+  delete edgeExists;
+
+  return _edgeExists ? forward(edge, true) : -1;
 }
