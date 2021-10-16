@@ -55,5 +55,8 @@ TEST (DeBruijnGraphTest, GraphMethods) {
   }
 
   // Indegree
-  ASSERT_EQ(dbg->indegree(6), 2);
+  int indegrees[11] ={0, 2, 1, 1,1, 1, 2, 1, 1, 1, 1};
+  for (int i=0; i<11; i++) {
+    ASSERT_EQ(dbg->indegree(i), indegrees[i]);
+  }
 }

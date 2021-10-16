@@ -237,29 +237,30 @@ int DeBruijnGraph::indegree(int v) {
   int flaggedRank2 = 0;
   int firstIncomingEdge = backward(last->select(true, v));
 
-  std::string firstIncomingEdgeLabel = w->access(firstIncomingEdge);
+  if(v >= first["A"]) {
+    std::string firstIncomingEdgeLabel = w->access(firstIncomingEdge);
 
-  int *nonFlaggedEdge = new int(-1);
-  bool *nonFlaggedEdgeFound = new bool(false);
+    int *nonFlaggedEdge = new int(-1);
+    bool *nonFlaggedEdgeFound = new bool(false);
 
-
-
-  for (int i = firstIncomingEdge + 1; i < numNodes && !*nonFlaggedEdgeFound;
-       i++) {
-    if (firstIncomingEdgeLabel == w->access(i) && !*flags[i].state) {
-      *nonFlaggedEdgeFound = true;
-      *nonFlaggedEdge = i;
+    for (int i = firstIncomingEdge + 1; i < numNodes && !*nonFlaggedEdgeFound;
+         i++) {
+      if (firstIncomingEdgeLabel == w->access(i) && !*flags[i].state) {
+        *nonFlaggedEdgeFound = true;
+        *nonFlaggedEdge = i;
+      }
     }
-  }
 
-  for (int i = 0; i < *nonFlaggedEdge; i++) {
-    if (w->access(i) == firstIncomingEdgeLabel && *flags[i].state) {
-      if (i < firstIncomingEdge)
-        flaggedRank1++;
-      if (i < *nonFlaggedEdge)
-        flaggedRank2++;
+    for (int i = 0; i < *nonFlaggedEdge; i++) {
+      if (w->access(i) == firstIncomingEdgeLabel && *flags[i].state) {
+        if (i < firstIncomingEdge)
+          flaggedRank1++;
+        if (i < *nonFlaggedEdge)
+          flaggedRank2++;
+      }
     }
-  }
 
-  return (flaggedRank2 - flaggedRank1) + (firstIncomingEdge ? 1 : 0);
+    return (flaggedRank2 - flaggedRank1) + 1;
+  }
+  return 0;
 }
