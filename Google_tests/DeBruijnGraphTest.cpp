@@ -51,8 +51,9 @@ TEST (DeBruijnGraphTest, GraphMethods) {
   };
 
   for(int i=0; i < labels->length(); i++) {
-    std::cout << labels[i];
     ASSERT_EQ(dbg->label(i), labels[i]);
   }
-  ASSERT_EQ(dbg->label(6), std::string("ACG"));
+
+  // Indegree
+  ASSERT_EQ(dbg->indegree(6), 2);
 }

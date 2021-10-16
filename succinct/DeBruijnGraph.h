@@ -31,6 +31,7 @@ class DeBruijnGraph {
 
 private:
   int k;
+  int numNodes;
   std::vector<flag_t> flags;
   std::map<std::string, int> first;
   BitVector<bool> *last;
