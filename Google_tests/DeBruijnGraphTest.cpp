@@ -34,4 +34,29 @@ TEST (DeBruijnGraphTest, GraphMethods) {
   ASSERT_EQ(dbg->outgoing(6, "T"), 12);
   ASSERT_EQ(dbg->outgoing(2, "C"), 5);
   ASSERT_EQ(dbg->outgoing(6, "G"), -1);
+
+  // Label
+  std::string labels[11] =  {
+      std::string ("$$$"),
+      std::string ("CGA"),
+      std::string ("$TA"),
+      std::string ("GAC"),
+      std::string ("TAC"),
+      std::string ("GTC"),
+      std::string ("ACG"),
+      std::string ("TCG"),
+      std::string ("$$T"),
+      std::string ("ACT"),
+      std::string ("CGT")
+  };
+
+  for(int i=0; i < labels->length(); i++) {
+    ASSERT_EQ(dbg->label(i), labels[i]);
+  }
+
+  // Indegree
+  int indegrees[11] ={0, 2, 1, 1,1, 1, 2, 1, 1, 1, 1};
+  for (int i=0; i<11; i++) {
+    ASSERT_EQ(dbg->indegree(i), indegrees[i]);
+  }
 }

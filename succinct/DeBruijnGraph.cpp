@@ -22,7 +22,9 @@ typedef struct nodeWithEdge {
   char edgeLabel;
 } nodeWithEdge_t;
 
-DeBruijnGraph::DeBruijnGraph(int k, const std::string &path) {
+DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
+  numNodes = 0;
+  k = K;
   w = nullptr;
   last = new BitVector<bool>;
   first["$"] = 0;
@@ -48,8 +50,10 @@ DeBruijnGraph::DeBruijnGraph(int k, const std::string &path) {
                                   nwe.edgeLabel == edgeLabel;
                          }) != nodesWithEdges.end();
 
-        if (!exists)
+        if (!exists) {
           nodesWithEdges.emplace_back(kmer, edgeLabel);
+          numNodes++;
+        }
       }
     }
 
@@ -173,11 +177,12 @@ int DeBruijnGraph::outgoing(int v, const std::string &c) {
   int *nodeIndexBefore = new int(last->select(true, v - 1));
   bool *edgeExists = new bool(false);
 
-  if (*x > *nodeIndexBefore && *x <= *nodeIndex) *edgeExists = true;
+  if (*x > *nodeIndexBefore && *x <= *nodeIndex)
+    *edgeExists = true;
   else {
     int *_v = new int(-1);
-    for(int i=(v-1); i>=0; i--) {
-      if(*flags[i].state != *flags[v].state && w->access(i) == w->access(v)) {
+    for (int i = (v - 1); i >= 0; i--) {
+      if (*flags[i].state != *flags[v].state && w->access(i) == w->access(v)) {
         *_v = i;
         break;
       }
@@ -186,8 +191,8 @@ int DeBruijnGraph::outgoing(int v, const std::string &c) {
     *nodeIndex = last->select(true, *_v);
     *nodeIndexBefore = last->select(true, *_v - 1);
 
-
-    if (*x > *nodeIndexBefore && *x <= *nodeIndex) *edgeExists = true;
+    if (*x > *nodeIndexBefore && *x <= *nodeIndex)
+      *edgeExists = true;
   }
   int edge = *x;
   bool _edgeExists = *edgeExists;
@@ -198,4 +203,64 @@ int DeBruijnGraph::outgoing(int v, const std::string &c) {
   delete edgeExists;
 
   return _edgeExists ? forward(edge, true) : -1;
+}
+
+std::string DeBruijnGraph::label(int v) {
+  int *edgeIndex = new int(last->select(true, v));
+  size_t size = k;
+  std::string label(size, ' ');
+
+  if (v) {
+    for (auto &it : first) {
+      if (*edgeIndex >= it.second) {
+        label[0] = it.first[0];
+      }
+    }
+
+    for (int i = 1; i < k; i++) {
+      *edgeIndex = backward(*edgeIndex);
+      for (auto &it : first) {
+        if (*edgeIndex >= it.second) {
+          label[i] = it.first[0];
+        }
+      }
+    }
+    std::reverse(label.begin(), label.end());
+  }
+
+  delete edgeIndex;
+  return v ? label : std::string("$$$");
+}
+
+int DeBruijnGraph::indegree(int v) {
+  int flaggedRank1 = 0;
+  int flaggedRank2 = 0;
+  int firstIncomingEdge = backward(last->select(true, v));
+
+  if(v >= first["A"]) {
+    std::string firstIncomingEdgeLabel = w->access(firstIncomingEdge);
+
+    int *nonFlaggedEdge = new int(-1);
+    bool *nonFlaggedEdgeFound = new bool(false);
+
+    for (int i = firstIncomingEdge + 1; i < numNodes && !*nonFlaggedEdgeFound;
+         i++) {
+      if (firstIncomingEdgeLabel == w->access(i) && !*flags[i].state) {
+        *nonFlaggedEdgeFound = true;
+        *nonFlaggedEdge = i;
+      }
+    }
+
+    for (int i = 0; i < *nonFlaggedEdge; i++) {
+      if (w->access(i) == firstIncomingEdgeLabel && *flags[i].state) {
+        if (i < firstIncomingEdge)
+          flaggedRank1++;
+        if (i < *nonFlaggedEdge)
+          flaggedRank2++;
+      }
+    }
+
+    return (flaggedRank2 - flaggedRank1) + 1;
+  }
+  return 0;
 }

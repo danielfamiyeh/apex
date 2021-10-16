@@ -31,6 +31,7 @@ class DeBruijnGraph {
 
 private:
   int k;
+  int numNodes;
   std::vector<flag_t> flags;
   std::map<std::string, int> first;
   BitVector<bool> *last;
@@ -45,6 +46,7 @@ public:
   int outdegree(int v);
   int outgoing(int v, const std::string& c);
   int indegree(int v);
+  std::string label(int v);
 };
 
 #endif // DNASSEMBLER_DEBRUIJNGRAPH_H
