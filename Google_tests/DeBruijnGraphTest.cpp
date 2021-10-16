@@ -26,8 +26,12 @@ TEST (DeBruijnGraphTest, GraphMethods) {
   auto* dbg = new DeBruijnGraph(3, "../../sample-edges");
 
   // Outdegree
-//  ASSERT_EQ(dbg->outdegree(4), 2);
-//  ASSERT_EQ(dbg->outdegree(7), 2);
-//
+  ASSERT_EQ(dbg->outdegree(3), 2);
+  ASSERT_EQ(dbg->outdegree(6), 2);
+  ASSERT_EQ(dbg->outdegree(1), 1);
 
+  // Outgoing
+  ASSERT_EQ(dbg->outgoing(6, "T"), 12);
+  ASSERT_EQ(dbg->outgoing(2, "C"), 5);
+  ASSERT_EQ(dbg->outgoing(6, "G"), -1);
 }
