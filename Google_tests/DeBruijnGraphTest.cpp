@@ -34,4 +34,25 @@ TEST (DeBruijnGraphTest, GraphMethods) {
   ASSERT_EQ(dbg->outgoing(6, "T"), 12);
   ASSERT_EQ(dbg->outgoing(2, "C"), 5);
   ASSERT_EQ(dbg->outgoing(6, "G"), -1);
+
+  // Label
+  std::string labels[11] =  {
+      std::string ("$$$"),
+      std::string ("CGA"),
+      std::string ("$TA"),
+      std::string ("GAC"),
+      std::string ("TAC"),
+      std::string ("GTC"),
+      std::string ("ACG"),
+      std::string ("TCG"),
+      std::string ("$$T"),
+      std::string ("ACT"),
+      std::string ("CGT")
+  };
+
+  for(int i=0; i < labels->length(); i++) {
+    std::cout << labels[i];
+    ASSERT_EQ(dbg->label(i), labels[i]);
+  }
+  ASSERT_EQ(dbg->label(6), std::string("ACG"));
 }
