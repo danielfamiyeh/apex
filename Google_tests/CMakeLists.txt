@@ -9,7 +9,7 @@ set(files
     ../succinct/BitVector.cpp
         ../succinct/DeBruijnGraph.h
         ../succinct/DeBruijnGraph.cpp
-        DeBruijnGraphTest.cpp)
+        DeBruijnGraphTest.cpp KOrderDeBruijnGraphTest.cpp)
 
 # adding the Google_Tests_run target
 add_executable(Google_Tests_run BitVectorTest.cpp WaveletTreeTest.cpp ${files})
