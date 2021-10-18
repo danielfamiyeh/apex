@@ -32,6 +32,7 @@ typedef struct nodeWithEdge {
 } nodeWithEdge_t;
 
 DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
+  std::vector<std::string> alphabet{"A", "T", "C", "G"};
   int numReads = 0;
   numNodes = 0;
   k = K;
@@ -49,6 +50,7 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
       read.insert(0, std::string(k, '$'));
       read.insert(read.size(), "$");
       first["$" + std::to_string(numReads)] = numReads;
+      alphabet.push_back("$" + std::to_string(numReads));
 
       // K-mer construction
       for (int i = 0; i < read.size() - (k); i++) {
@@ -84,7 +86,10 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
       }
     }
 
-    // Co-lex sort nodes and W tree
+    /*
+     * Sort nodes and W tree by co-lex ordering of nodes
+     * Tie-break via edge labels
+     */
     std::sort(nodesWithEdges.begin(), nodesWithEdges.end(),
               [this](auto const &a, auto const &b) {
                 for (int i = 0; i < k; i++) {
@@ -101,11 +106,56 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
       _w.push_back(nodesWithEdge.edgeLabel);
     }
 
-    for(int i=0; i<nodes.size(); i++) {
-      for(int j=0; j<k; j++) {
-        std::cout << nodes[i][j];
+    // W Tree
+    w = new WaveletTree(alphabet, _w);
+
+    // L vector
+    for (int i = 0; i < nodes.size() - 1; i++) {
+      bool *same = new bool(true);
+      for (int j = 0; j < k && *same; j++) {
+        if (nodes[j][j] != nodes[i + 1][j])
+          *same = false;
       }
-      std::cout << " " << _w[i] << "\n";
+      last->pushBack(*same);
+      delete same;
+    }
+    last->pushBack(true);
+
+    // Flag setting
+    for (int i = 0; i < nodes.size(); i++) {
+      flags.emplace_back(false);
+      if (i > 0) {
+        for (int j = 0; j < i; j++) {
+
+          // If ∃ j < i | w[j] = w[i]
+          if (w->access(j) == w->access(i)) {
+            bool *same = new bool(true);
+            // See if they share suffixes
+            for (int l = 1; l < k && *same; l++) {
+              if (nodes[j][l] != nodes[i][l]) {
+                *same = false;
+              }
+            }
+
+            // If they do, then flag i's edge
+            if (*same) {
+              *flags[i].state = true;
+              *flags[i].indexTo = j;
+              *flags[j].indexFrom = i;
+            }
+          }
+        }
+        // F vector
+        if (nodes[i][k - 1] != nodes[i - 1][k - 1])
+          first[nodes[i][k - 1]] = i;
+      }
+
+      std::cout << last->access(i) << "   ";
+      for (int j = 0; j < k; j++) {
+        std::cout << nodes[i][j] << " ";
+      }
+      std::cout << "  " << w->access(i) << " " << (*flags[i].state ? "-\n" :
+                                                                "\n");
     }
   }
 }
@@ -133,7 +183,8 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
 //         std::reverse(kmer.begin(), kmer.end());
 //         bool exists =
 //             std::find_if(nodesWithEdges.begin(), nodesWithEdges.end(),
-//                          [&edgeLabel, &kmer](const nodeWithEdge &nwe) -> bool
+//                          [&edgeLabel, &kmer](const nodeWithEdge &nwe) ->
+//                          bool
 //                          {
 //                            return nwe.nodeLabel == kmer &&
 //                                   nwe.edgeLabel == edgeLabel;
@@ -150,8 +201,8 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
 //     std::sort(
 //         nodesWithEdges.begin(), nodesWithEdges.end(),
 //         [](auto const &a, auto const &b) {
-//           if (a.nodeLabel == b.nodeLabel) return a.edgeLabel < b.edgeLabel;
-//           return a.nodeLabel < b.nodeLabel;
+//           if (a.nodeLabel == b.nodeLabel) return a.edgeLabel <
+//           b.edgeLabel; return a.nodeLabel < b.nodeLabel;
 //         });
 //     for (auto &nodesWithEdge : nodesWithEdges) {
 //       std::reverse(nodesWithEdge.nodeLabel.begin(),
@@ -191,12 +242,11 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
 //       }
 //     }
 //
-////                for (int i = 0; i < nodes.size(); i++) {
-////                  std::cout << last->access(i) << " " << nodes[i] << " " <<
-////                  w->access(i)
-////                            << (*flags[i].state ? "-" : "") << std::endl;
-////                }
-////                std::cout << "\n";
+//                for (int i = 0; i < nodes.size(); i++) {
+//                  std::cout << last->access(i) << " " << nodes[i] << " "
+//<< /                  w->access(i) /                            <<
+//(*flags[i].state ? "-" : "") << std::endl; /                } / std::cout
+//<< "\n";
 //  } else {
 //    std::cout << "Could not open file " << path << ".\n";
 //  }

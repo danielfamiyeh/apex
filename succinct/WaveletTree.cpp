@@ -32,7 +32,7 @@ void printTree(WaveletNode *v) {
 void deleteNode(WaveletNode *v) { delete v; }
 
 WaveletTree::WaveletTree(std::vector<std::string> alphabet,
-                         const std::string &str) {
+                         std::vector<std::string> str) {
   root = partition(alphabet, str, true);
   inferCodes();
 }
@@ -45,13 +45,13 @@ WaveletTree::~WaveletTree() {
 }
 
 WaveletNode *WaveletTree::partition(std::vector<std::string> alphabet,
-                                    const std::string &str,
+                                    const std::vector<std::string>& str,
                                     bool start = false) {
   int alphaMidpoint = (int)(alphabet.size() / 2);
   std::map<std::string, bool> charMap;
   BitVector<bool> bitVector;
-  std::vector<char> leftStrVector;
-  std::vector<char> rightStrVector;
+  std::vector<std::string> leftStrVector;
+  std::vector<std::string> rightStrVector;
   std::set<std::string> leftAlpha;
   std::set<std::string> rightAlpha;
   WaveletNode *v;
@@ -62,18 +62,17 @@ WaveletNode *WaveletTree::partition(std::vector<std::string> alphabet,
   }
 
   // Covert string to bitVector
-  for (char c : str) {
-    std::string charAsStr = std::string(1, c);
-    bool val = (bool)charMap[charAsStr];
+  for (const std::string &c : str) {
+    bool val = (bool)charMap[c];
     bitVector.pushBack(val);
 
     // Create new child vectors and alphabet
     if (!val) {
       leftStrVector.push_back(c);
-      leftAlpha.insert(charAsStr);
+      leftAlpha.insert(c);
     } else {
       rightStrVector.push_back(c);
-      rightAlpha.insert(charAsStr);
+      rightAlpha.insert(c);
     }
   }
 
@@ -87,14 +86,14 @@ WaveletNode *WaveletTree::partition(std::vector<std::string> alphabet,
   }
 
   // Recurse on children and assign
-  v->setLeftChild(
-      partition(std::vector<std::string>(leftAlpha.begin(), leftAlpha.end()),
-                std::string(leftStrVector.begin(), leftStrVector.end())));
+  v->setLeftChild(partition(
+      std::vector<std::string>(leftAlpha.begin(), leftAlpha.end()),
+      std::vector<std::string>(leftStrVector.begin(), leftStrVector.end())));
   v->getLeftChild()->setEdgeValue(false); // aka 0
 
-  v->setRightChild(
-      partition(std::vector<std::string>(rightAlpha.begin(), rightAlpha.end()),
-                std::string(rightStrVector.begin(), rightStrVector.end())));
+  v->setRightChild(partition(
+      std::vector<std::string>(rightAlpha.begin(), rightAlpha.end()),
+      std::vector<std::string>(rightStrVector.begin(), rightStrVector.end())));
   v->getRightChild()->setEdgeValue(true); // aka 1
 
   return v;
