@@ -111,13 +111,13 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
 
     // L vector
     for (int i = 0; i < nodes.size() - 1; i++) {
-      bool *same = new bool(true);
-      for (int j = 0; j < k && *same; j++) {
-        if (nodes[j][j] != nodes[i + 1][j])
-          *same = false;
+      bool *diff = new bool(false);
+      for (int j = 0; j < k && !*diff; j++) {
+        if (nodes[i][j] != nodes[i + 1][j])
+          *diff = true;
       }
-      last->pushBack(*same);
-      delete same;
+      last->pushBack(*diff);
+      delete diff;
     }
     last->pushBack(true);
 
@@ -150,107 +150,22 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
           first[nodes[i][k - 1]] = i;
       }
 
-      std::cout << last->access(i) << "   ";
-      for (int j = 0; j < k; j++) {
-        std::cout << nodes[i][j] << " ";
-      }
-      std::cout << "  " << w->access(i) << " " << (*flags[i].state ? "-\n" :
-                                                                "\n");
+//      std::cout << last->access(i) << "   ";
+//      for (int j = 0; j < k; j++) {
+//        std::cout << nodes[i][j] << " ";
+//      }
+//      std::cout << "  " << w->access(i) << " "
+//                << (*flags[i].state ? "-\n" : "\n");
     }
+
+//    std::cout << "\n\nFirst Indexes";
+//    for (auto &it : first) {
+//      std::cout << it.first << " " << it.second << "\n";
+//    }
+  } else {
+    std::cout << "Could not open file " << path << ".\n";
   }
 }
-
-// DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
-//   numNodes = 0;
-//   k = K;
-//   w = nullptr;
-//   last = new BitVector<bool>;
-//   first["$"] = 0;
-//   std::vector<std::string> nodes;
-//
-//   std::ifstream reads(path);
-//   if (reads.is_open()) {
-//     std::vector<char> _w;
-//     std::vector<nodeWithEdge> nodesWithEdges;
-//
-//     for (std::string read; getline(reads, read);) {
-//       read.insert(0, std::string(k, '$'));
-//       read.insert(read.size(), "$");
-//
-//       for (int i = 0; i < read.size() - (k); i++) {
-//         std::string kmer = read.substr(i, k);
-//         char edgeLabel = read[k + i];
-//         std::reverse(kmer.begin(), kmer.end());
-//         bool exists =
-//             std::find_if(nodesWithEdges.begin(), nodesWithEdges.end(),
-//                          [&edgeLabel, &kmer](const nodeWithEdge &nwe) ->
-//                          bool
-//                          {
-//                            return nwe.nodeLabel == kmer &&
-//                                   nwe.edgeLabel == edgeLabel;
-//                          }) != nodesWithEdges.end();
-//
-//         if (!exists) {
-//           nodesWithEdges.emplace_back(kmer, edgeLabel);
-//           numNodes++;
-//         }
-//       }
-//     }
-//
-//     // Co-lex sort nodes and W tree
-//     std::sort(
-//         nodesWithEdges.begin(), nodesWithEdges.end(),
-//         [](auto const &a, auto const &b) {
-//           if (a.nodeLabel == b.nodeLabel) return a.edgeLabel <
-//           b.edgeLabel; return a.nodeLabel < b.nodeLabel;
-//         });
-//     for (auto &nodesWithEdge : nodesWithEdges) {
-//       std::reverse(nodesWithEdge.nodeLabel.begin(),
-//                    nodesWithEdge.nodeLabel.end());
-//       nodes.push_back(nodesWithEdge.nodeLabel);
-//       _w.push_back(nodesWithEdge.edgeLabel);
-//     }
-//
-//     std::vector<std::string> alphabet{"A", "T", "C", "G", "$"};
-//     //    std::cout << std::string(_w.begin(), _w.end()) << std::endl;
-//     w = new WaveletTree(alphabet, std::string(_w.begin(), _w.end()));
-//
-//     // F vector
-//     for (int i = 0; i < nodes.size() - 1; i++) {
-//       last->pushBack(nodes[i] != nodes[i + 1]);
-//     }
-//     last->pushBack(true);
-//
-//     // Flag setting
-//     for (int i = 0; i < nodes.size(); i++) {
-//       flags.emplace_back(false);
-//       if (i > 0) {
-//         for (int j = 0; j < i; j++) {
-//           if (w->access(j) == w->access(i) &&
-//               nodes[j].substr(1, k - 1) == nodes[i].substr(1, k - 1)) {
-//             *flags[i].state = true;
-//             *flags[i].indexTo = j;
-//             *flags[j].indexFrom = i;
-//           }
-//         }
-//
-//         // F vector
-//         std::string after = nodes[i].substr(k - 1, 1);
-//         if (after != nodes[i - 1].substr(k - 1, 1)) {
-//           first[after] = i;
-//         }
-//       }
-//     }
-//
-//                for (int i = 0; i < nodes.size(); i++) {
-//                  std::cout << last->access(i) << " " << nodes[i] << " "
-//<< /                  w->access(i) /                            <<
-//(*flags[i].state ? "-" : "") << std::endl; /                } / std::cout
-//<< "\n";
-//  } else {
-//    std::cout << "Could not open file " << path << ".\n";
-//  }
-//}
 
 int DeBruijnGraph::forward(int u, bool isOutgoing) {
   std::string c = w->access(u);
