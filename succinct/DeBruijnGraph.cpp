@@ -150,18 +150,18 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
           first[nodes[i][k - 1]] = i;
       }
 
-      //      std::cout << last->access(i) << "   ";
-      //      for (int j = 0; j < k; j++) {
-      //        std::cout << nodes[i][j] << " ";
-      //      }
-      //      std::cout << "  " << w->access(i) << " "
-      //                << (*flags[i].state ? "-\n" : "\n");
+//            std::cout << i << " " <<  last->access(i) << "   ";
+//            for (int j = 0; j < k; j++) {
+//              std::cout << nodes[i][j] << " ";
+//            }
+//            std::cout << "  " << w->access(i) << " "
+//                      << (*flags[i].state ? "-\n" : "\n");
     }
 
-    //    std::cout << "\n\nFirst Indexes";
-    //    for (auto &it : first) {
-    //      std::cout << it.first << " " << it.second << "\n";
-    //    }
+//        std::cout << "\n\nFirst Indexes";
+//        for (auto &it : first) {
+//          std::cout << it.first << " " << it.second << "\n";
+//        }
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }
@@ -195,11 +195,14 @@ int DeBruijnGraph::forward(int u, bool isOutgoing) {
 }
 
 int DeBruijnGraph::backward(int v) {
-  std::string c = new char('$');
+  std::string c = "$0";
+  int *minIndex = new int(-1);
 
   for (auto &it : first) {
-    if (v >= it.second)
+    if (v >= it.second && it.second >= *minIndex) {
       c = it.first;
+      *minIndex = it.second;
+    }
   }
 
   int rankToBase = last->rank(true, first[c]);
