@@ -150,18 +150,18 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
           first[nodes[i][k - 1]] = i;
       }
 
-//      std::cout << last->access(i) << "   ";
-//      for (int j = 0; j < k; j++) {
-//        std::cout << nodes[i][j] << " ";
-//      }
-//      std::cout << "  " << w->access(i) << " "
-//                << (*flags[i].state ? "-\n" : "\n");
+      //      std::cout << last->access(i) << "   ";
+      //      for (int j = 0; j < k; j++) {
+      //        std::cout << nodes[i][j] << " ";
+      //      }
+      //      std::cout << "  " << w->access(i) << " "
+      //                << (*flags[i].state ? "-\n" : "\n");
     }
 
-//    std::cout << "\n\nFirst Indexes";
-//    for (auto &it : first) {
-//      std::cout << it.first << " " << it.second << "\n";
-//    }
+    //    std::cout << "\n\nFirst Indexes";
+    //    for (auto &it : first) {
+    //      std::cout << it.first << " " << it.second << "\n";
+    //    }
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }
@@ -265,13 +265,12 @@ int DeBruijnGraph::outgoing(int v, const std::string &c) {
 
 std::string DeBruijnGraph::label(int v) {
   int *edgeIndex = new int(last->select(true, v));
-  size_t size = k;
-  std::string label(size, ' ');
+  std::vector<std::string> label(k, " ");
 
   if (v) {
     for (auto &it : first) {
       if (*edgeIndex >= it.second) {
-        label[0] = it.first[0];
+        label[0] = it.first;
       }
     }
 
@@ -279,17 +278,23 @@ std::string DeBruijnGraph::label(int v) {
       *edgeIndex = backward(*edgeIndex);
       for (auto &it : first) {
         if (*edgeIndex >= it.second) {
-          label[i] = it.first[0];
+          label[i] = it.first;
         }
       }
     }
     if (*edgeIndex == 0)
-      label[k - 1] = '$';
+      label[k - 1] = "$0";
     std::reverse(label.begin(), label.end());
   }
 
   delete edgeIndex;
-  return v ? label : std::string("$$$");
+  if (v) {
+    std::string s;
+    for (const auto &nucleotide : label)
+      s += nucleotide;
+    return s;
+  }
+  return "$0$0$0";
 }
 
 int DeBruijnGraph::indegree(int v) {
@@ -325,19 +330,50 @@ int DeBruijnGraph::indegree(int v) {
   return 0;
 }
 
-int DeBruijnGraph::incoming(int v, std::string c) {
+std::vector<std::string> DeBruijnGraph::labelV(int v) {
+  int *edgeIndex = new int(last->select(true, v));
+  std::vector<std::string> label(k, "$0");
+
+  if (v) {
+    for (auto &it : first) {
+      if (*edgeIndex >= it.second) {
+        label[0] = it.first;
+      }
+    }
+
+    for (int i = 1; i < k && *edgeIndex != 0; i++) {
+      *edgeIndex = backward(*edgeIndex);
+      for (auto &it : first) {
+        if (*edgeIndex >= it.second) {
+          label[i] = it.first;
+        }
+      }
+    }
+    if (*edgeIndex == 0)
+      label[k - 1] = "$0";
+    std::reverse(label.begin(), label.end());
+  }
+
+  return label;
+}
+
+int DeBruijnGraph::incoming(int v, const std::string &c) {
   int index = last->select(true, v);
   int rangeStart = backward(index);
   int rangeEnd = rangeStart + (indegree(v) + 1);
-  std::string nodeLabel = label(v);
+  std::vector<std::string> nodeLabel = labelV(v);
 
-  for (int i = rangeStart; i < rangeEnd; i++) {
-    if (w->access(i)[0] == nodeLabel[k - 1]) {
-      int rankToI = last->rank(true, i);
-      std::string _label = label(rankToI);
+  if (rangeEnd > 0) {
+    for (int i = rangeStart; i < rangeEnd; i++) {
+      std::string edgeLabel = w->access(i);
 
-      if (_label[0] == c[0])
-        return rankToI;
+      if (edgeLabel == nodeLabel[k - 1]) {
+        int rankToI = last->rank(true, i);
+        std::string _label = label(rankToI);
+
+        if (_label.substr(0, c.size()) == c)
+          return rankToI;
+      }
     }
   }
   return -1;

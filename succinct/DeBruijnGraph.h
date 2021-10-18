@@ -47,7 +47,8 @@ public:
   int outgoing(int v, const std::string& c);
   int indegree(int v);
   std::string label(int v);
-  int incoming(int v, std::string c);
+  std::vector<std::string> labelV(int v);
+  int incoming(int v, const std::string& c);
 };
 
 #endif // DNASSEMBLER_DEBRUIJNGRAPH_H
