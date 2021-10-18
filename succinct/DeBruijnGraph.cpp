@@ -11,37 +11,66 @@
 
 #include "DeBruijnGraph.h"
 
+void replaceAll(std::string &str, const std::string &from,
+                const std::string &to) {
+  size_t start_pos = 0;
+  while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+    str.replace(start_pos, from.length(), to);
+    start_pos += to.length();
+  }
+}
+
 // For co-lex. sorting node matrix with edge label vector
 typedef struct nodeWithEdge {
-  nodeWithEdge(std::string NodeLabel, char EdgeLabel) {
+  nodeWithEdge(std::vector<std::string> NodeLabel, std::string EdgeLabel) {
     nodeLabel = NodeLabel;
     edgeLabel = EdgeLabel;
   }
 
-  std::string nodeLabel;
-  char edgeLabel;
+  std::vector<std::string> nodeLabel;
+  std::string edgeLabel;
 } nodeWithEdge_t;
 
 DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
+  std::vector<std::string> alphabet{"A", "T", "C", "G"};
+  int numReads = 0;
   numNodes = 0;
   k = K;
   w = nullptr;
   last = new BitVector<bool>;
-  first["$"] = 0;
-  std::vector<std::string> nodes;
+  std::vector<std::vector<std::string>> nodes;
+  std::ifstream readData(path);
 
-  std::ifstream reads(path);
-  if (reads.is_open()) {
-    std::vector<char> _w;
+  if (readData.is_open()) {
+    std::vector<std::string> _w;
     std::vector<nodeWithEdge> nodesWithEdges;
 
-    for (std::string read; getline(reads, read);) {
+    for (std::string read; getline(readData, read);) {
+      // Read padding
       read.insert(0, std::string(k, '$'));
       read.insert(read.size(), "$");
+      first["$" + std::to_string(numReads)] = numReads;
+      alphabet.push_back("$" + std::to_string(numReads));
 
+      // K-mer construction
       for (int i = 0; i < read.size() - (k); i++) {
-        std::string kmer = read.substr(i, k);
-        char edgeLabel = read[k + i];
+        if (i == read.size() - k - 1)
+          numReads++;
+
+        std::string readSubstring = read.substr(i, k);
+        std::vector<std::string> kmer;
+
+        kmer.reserve(k);
+        for (int j = 0; j < k; j++) {
+          kmer.push_back(readSubstring[j] == '$'
+                             ? "$" + std::to_string(numReads)
+                             : std::string(1, readSubstring[j]));
+        }
+
+        std::string edgeLabel = read[k + i] == '$'
+                                    ? "$" + std::to_string(numReads)
+                                    : std::string(1, read[k + i]);
+
         std::reverse(kmer.begin(), kmer.end());
         bool exists =
             std::find_if(nodesWithEdges.begin(), nodesWithEdges.end(),
@@ -57,10 +86,19 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
       }
     }
 
-    // Co-lex sort nodes and W tree
-    std::sort(
-        nodesWithEdges.begin(), nodesWithEdges.end(),
-        [](auto const &a, auto const &b) { return a.nodeLabel < b.nodeLabel; });
+    /*
+     * Sort nodes and W tree by co-lex ordering of nodes
+     * Tie-break via edge labels
+     */
+    std::sort(nodesWithEdges.begin(), nodesWithEdges.end(),
+              [this](auto const &a, auto const &b) {
+                for (int i = 0; i < k; i++) {
+                  if (a.nodeLabel[i] == b.nodeLabel[i])
+                    continue;
+                  return a.nodeLabel[i] < b.nodeLabel[i];
+                }
+                return a.edgeLabel < b.edgeLabel;
+              });
     for (auto &nodesWithEdge : nodesWithEdges) {
       std::reverse(nodesWithEdge.nodeLabel.begin(),
                    nodesWithEdge.nodeLabel.end());
@@ -68,13 +106,18 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
       _w.push_back(nodesWithEdge.edgeLabel);
     }
 
-    std::vector<std::string> alphabet{"A", "T", "C", "G", "$"};
-    //    std::cout << std::string(_w.begin(), _w.end()) << std::endl;
-    w = new WaveletTree(alphabet, std::string(_w.begin(), _w.end()));
+    // W Tree
+    w = new WaveletTree(alphabet, _w);
 
-    // F vector
+    // L vector
     for (int i = 0; i < nodes.size() - 1; i++) {
-      last->pushBack(nodes[i] != nodes[i + 1]);
+      bool *diff = new bool(false);
+      for (int j = 0; j < k && !*diff; j++) {
+        if (nodes[i][j] != nodes[i + 1][j])
+          *diff = true;
+      }
+      last->pushBack(*diff);
+      delete diff;
     }
     last->pushBack(true);
 
@@ -83,27 +126,42 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
       flags.emplace_back(false);
       if (i > 0) {
         for (int j = 0; j < i; j++) {
-          if (w->access(j) == w->access(i) &&
-              nodes[j].substr(1, k - 1) == nodes[i].substr(1, k - 1)) {
-            *flags[i].state = true;
-            *flags[i].indexTo = j;
-            *flags[j].indexFrom = i;
+
+          // If ∃ j < i | w[j] = w[i]
+          if (w->access(j) == w->access(i)) {
+            bool *same = new bool(true);
+            // See if they share suffixes
+            for (int l = 1; l < k && *same; l++) {
+              if (nodes[j][l] != nodes[i][l]) {
+                *same = false;
+              }
+            }
+
+            // If they do, then flag i's edge
+            if (*same) {
+              *flags[i].state = true;
+              *flags[i].indexTo = j;
+              *flags[j].indexFrom = i;
+            }
           }
         }
-
         // F vector
-        std::string after = nodes[i].substr(k - 1, 1);
-        if (after != nodes[i - 1].substr(k - 1, 1)) {
-          first[after] = i;
-        }
+        if (nodes[i][k - 1] != nodes[i - 1][k - 1])
+          first[nodes[i][k - 1]] = i;
       }
+
+      //      std::cout << last->access(i) << "   ";
+      //      for (int j = 0; j < k; j++) {
+      //        std::cout << nodes[i][j] << " ";
+      //      }
+      //      std::cout << "  " << w->access(i) << " "
+      //                << (*flags[i].state ? "-\n" : "\n");
     }
 
-    //            for (int i = 0; i < nodes.size(); i++) {
-    //              std::cout << last->access(i) << " " << nodes[i] << " " <<
-    //              w->access(i)
-    //                        << (*flags[i].state ? "-" : "") << std::endl;
-    //            }
+    //    std::cout << "\n\nFirst Indexes";
+    //    for (auto &it : first) {
+    //      std::cout << it.first << " " << it.second << "\n";
+    //    }
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }
@@ -207,13 +265,12 @@ int DeBruijnGraph::outgoing(int v, const std::string &c) {
 
 std::string DeBruijnGraph::label(int v) {
   int *edgeIndex = new int(last->select(true, v));
-  size_t size = k;
-  std::string label(size, ' ');
+  std::vector<std::string> label(k, " ");
 
   if (v) {
     for (auto &it : first) {
       if (*edgeIndex >= it.second) {
-        label[0] = it.first[0];
+        label[0] = it.first;
       }
     }
 
@@ -221,17 +278,23 @@ std::string DeBruijnGraph::label(int v) {
       *edgeIndex = backward(*edgeIndex);
       for (auto &it : first) {
         if (*edgeIndex >= it.second) {
-          label[i] = it.first[0];
+          label[i] = it.first;
         }
       }
     }
     if (*edgeIndex == 0)
-      label[k - 1] = '$';
+      label[k - 1] = "$0";
     std::reverse(label.begin(), label.end());
   }
 
   delete edgeIndex;
-  return v ? label : std::string("$$$");
+  if (v) {
+    std::string s;
+    for (const auto &nucleotide : label)
+      s += nucleotide;
+    return s;
+  }
+  return "$0$0$0";
 }
 
 int DeBruijnGraph::indegree(int v) {
@@ -267,19 +330,50 @@ int DeBruijnGraph::indegree(int v) {
   return 0;
 }
 
-int DeBruijnGraph::incoming(int v, std::string c) {
+std::vector<std::string> DeBruijnGraph::labelV(int v) {
+  int *edgeIndex = new int(last->select(true, v));
+  std::vector<std::string> label(k, "$0");
+
+  if (v) {
+    for (auto &it : first) {
+      if (*edgeIndex >= it.second) {
+        label[0] = it.first;
+      }
+    }
+
+    for (int i = 1; i < k && *edgeIndex != 0; i++) {
+      *edgeIndex = backward(*edgeIndex);
+      for (auto &it : first) {
+        if (*edgeIndex >= it.second) {
+          label[i] = it.first;
+        }
+      }
+    }
+    if (*edgeIndex == 0)
+      label[k - 1] = "$0";
+    std::reverse(label.begin(), label.end());
+  }
+
+  return label;
+}
+
+int DeBruijnGraph::incoming(int v, const std::string &c) {
   int index = last->select(true, v);
   int rangeStart = backward(index);
   int rangeEnd = rangeStart + (indegree(v) + 1);
-  std::string nodeLabel = label(v);
+  std::vector<std::string> nodeLabel = labelV(v);
 
-  for (int i = rangeStart; i < rangeEnd; i++) {
-    if (w->access(i)[0] == nodeLabel[k - 1]) {
-      int rankToI = last->rank(true, i);
-      std::string _label = label(rankToI);
+  if (rangeEnd > 0) {
+    for (int i = rangeStart; i < rangeEnd; i++) {
+      std::string edgeLabel = w->access(i);
 
-      if (_label[0] == c[0])
-        return rankToI;
+      if (edgeLabel == nodeLabel[k - 1]) {
+        int rankToI = last->rank(true, i);
+        std::string _label = label(rankToI);
+
+        if (_label.substr(0, c.size()) == c)
+          return rankToI;
+      }
     }
   }
   return -1;

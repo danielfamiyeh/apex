@@ -36,15 +36,14 @@ TEST(DeBruijnGraphTest, GraphMethods) {
 
   // Label
   std::string labels[11] = {
-      std::string("$$$"), std::string("CGA"), std::string("$TA"),
-      std::string("GAC"), std::string("TAC"), std::string("GTC"),
-      std::string("ACG"), std::string("TCG"), std::string("$$T"),
-      std::string("ACT"), std::string("CGT")};
+      std::string("$0$0$0"), std::string("CGA"), std::string("$0TA"),
+      std::string("GAC"),    std::string("TAC"), std::string("GTC"),
+      std::string("ACG"),    std::string("TCG"), std::string("$0$0T"),
+      std::string("ACT"),    std::string("CGT")};
 
   for (int i = 0; i < 11; i++) {
     ASSERT_EQ(dbg->label(i), labels[i]);
   }
-
 
   // Indegree
   int indegrees[11] = {0, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1};
@@ -52,17 +51,16 @@ TEST(DeBruijnGraphTest, GraphMethods) {
     ASSERT_EQ(dbg->indegree(i), indegrees[i]);
   }
 
-      // Incoming
-
-      ASSERT_EQ(dbg->incoming(0, "T"), -1);
-      ASSERT_EQ(dbg->incoming(1, "A"), 6);
-      ASSERT_EQ(dbg->incoming(2, "$"), 8);
-      ASSERT_EQ(dbg->incoming(3, "C"), 1);
-      ASSERT_EQ(dbg->incoming(4, "$"), 2);
-      ASSERT_EQ(dbg->incoming(5, "C"), 10);
-      ASSERT_EQ(dbg->incoming(6, "G"), 3);
-      ASSERT_EQ(dbg->incoming(7, "G"), 5);
-      ASSERT_EQ(dbg->incoming(8, "$"), 0);
-      ASSERT_EQ(dbg->incoming(9, "G"), 3);
-      ASSERT_EQ(dbg->incoming(10, "A"), 6);
+  // Incoming
+  ASSERT_EQ(dbg->incoming(0, "T"), -1);
+  ASSERT_EQ(dbg->incoming(1, "A"), 6);
+  ASSERT_EQ(dbg->incoming(2, "$0"), 8);
+  ASSERT_EQ(dbg->incoming(3, "C"), 1);
+  ASSERT_EQ(dbg->incoming(4, "$"), 2);
+  ASSERT_EQ(dbg->incoming(5, "C"), 10);
+  ASSERT_EQ(dbg->incoming(6, "G"), 3);
+  ASSERT_EQ(dbg->incoming(7, "G"), 5);
+  ASSERT_EQ(dbg->incoming(8, "$"), 0);
+  ASSERT_EQ(dbg->incoming(9, "G"), 3);
+  ASSERT_EQ(dbg->incoming(10, "A"), 6);
 }

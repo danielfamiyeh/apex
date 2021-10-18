@@ -10,16 +10,16 @@
 TEST(WaveletTreeTest, AccessTest) {
 
   std::vector<std::string> alpha1{"A", "C", "H", "N", "T", "W", "Y"};
-  std::string s1 = "WHYCANT";
+  std::vector<std::string> s1 = {"W", "H", "Y", "C", "A", "N", "T"};
   auto *tree1 = new WaveletTree(alpha1, s1);
 
-  std::vector<std::string> alpha2{"H", "O", "T", "U" "Y"};
-  std::string s2 = "YOUTH";
-  auto *tree2 = new WaveletTree(alpha2, s2);
+    std::vector<std::string> alpha2{"H", "O", "T", "U" "Y"};
+    std::vector<std::string> s2 = {"Y", "O", "U", "T", "H"};
+    auto *tree2 = new WaveletTree(alpha2, s2);
 
-  std::vector<std::string> alpha3{"A", "F", "I", "K", "N", "O"};
-  std::string s3 = "INKOFA";
-  auto *tree3 = new WaveletTree(alpha3, s3);
+    std::vector<std::string> alpha3{"A", "F", "I", "K", "N", "O"};
+    std::vector<std::string> s3 = {"I", "N", "K", "O", "F", "A"};
+    auto *tree3 = new WaveletTree(alpha3, s3);
 
   ASSERT_EQ(tree1->access(4), "A");
   ASSERT_EQ(tree1->access(0), "W");
@@ -33,11 +33,12 @@ TEST(WaveletTreeTest, AccessTest) {
   ASSERT_EQ(tree3->access(1), "N");
 }
 
-TEST (WaveletTreeTest, RankTest) {
+TEST(WaveletTreeTest, RankTest) {
   std::vector<std::string> alpha1{"M", "I", "S", "P"};
-  std::string s1 = "MISSISSIPPI";
+  std::vector<std::string> s1 = {"M", "I", "S", "S", "I", "S",
+                                 "S", "I", "P", "P", "I"};
 
-  auto* tree1 = new WaveletTree(alpha1, s1);
+  auto *tree1 = new WaveletTree(alpha1, s1);
 
   ASSERT_EQ(tree1->rank("I", 6), 2);
   ASSERT_EQ(tree1->rank("S", 6), 3);
@@ -45,11 +46,12 @@ TEST (WaveletTreeTest, RankTest) {
   ASSERT_EQ(tree1->rank("P", 10), 2);
 }
 
-TEST (WaveletTreeTest, SelectTest) {
+TEST(WaveletTreeTest, SelectTest) {
   std::vector<std::string> alpha1{"M", "I", "S", "P"};
-  std::string s1 = "MISSISSIPPI";
+  std::vector<std::string> s1 = {"M", "I", "S", "S", "I", "S",
+                                 "S", "I", "P", "P", "I"};
 
-  auto* tree1 = new WaveletTree(alpha1, s1);
+  auto *tree1 = new WaveletTree(alpha1, s1);
 
   ASSERT_EQ(tree1->select("S", 3), 6);
   ASSERT_EQ(tree1->select("I", 3), 10);
