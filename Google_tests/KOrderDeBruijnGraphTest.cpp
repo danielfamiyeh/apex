@@ -6,6 +6,7 @@
 #include "lib/googletest/include/gtest/gtest.h"
 
 #include <iostream>
+#include <utility>
 
 TEST(KOrderDeBruijnGraphTest, BWTMethods) {
   auto *dbg = new DeBruijnGraph(3, "../../sample-edges-2");
@@ -59,8 +60,7 @@ TEST(KOrderDeBruijnGraphTest, GraphMethods) {
     ASSERT_EQ(dbg->label(i), nodeLabels[i]);
   }
   // Indegree
-  // Change for pads
-  std::vector<int> indegrees{0, 0, 0, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1};
+  std::vector<int> indegrees{0, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1};
 
   for (int i = 0; i < indegrees.size(); i++) {
     ASSERT_EQ(dbg->indegree(i), indegrees[i]);
@@ -69,7 +69,7 @@ TEST(KOrderDeBruijnGraphTest, GraphMethods) {
   typedef struct incomingStruct {
 
     incomingStruct(std::string NodeLabel, int NodeIndex) {
-      nodeLabel = NodeLabel;
+      nodeLabel = std::move(NodeLabel);
       nodeIndex = NodeIndex;
     }
 
@@ -77,7 +77,6 @@ TEST(KOrderDeBruijnGraphTest, GraphMethods) {
     int nodeIndex;
   } incoming_t;
 
-  // Fix padding
   std::vector<incoming_t> incomings{incoming_t("A", -1),  incoming_t("C", 7),
                                     incoming_t("C", 10),  incoming_t("T", 9),
                                     incoming_t("$2", 11), incoming_t("$0", 12),
