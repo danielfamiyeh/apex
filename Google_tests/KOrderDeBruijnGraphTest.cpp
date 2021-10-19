@@ -51,7 +51,7 @@ TEST(KOrderDeBruijnGraphTest, GraphMethods) {
   ASSERT_EQ(dbg->outgoing(14, "C"), 12);
 
   // Label
-  std::string nodeLabels[17] = {
+  std::string nodeLabels[15] = {
       "$0$0$0", "$1$1$1", "$2$2$2", "ACA", "$2GA",  "$0TA",  "$1TA",
       "CAC",    "GAC",    "TAC",    "CTC", "$2$2G", "$0$0T", "$1$1T", "ACT"};
 
