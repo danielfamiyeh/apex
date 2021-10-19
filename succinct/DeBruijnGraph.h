@@ -31,6 +31,7 @@ class DeBruijnGraph {
 
 private:
   int k;
+  int numReads;
   int numNodes;
   std::vector<flag_t> flags;
   std::map<std::string, int> first;
@@ -39,7 +40,7 @@ private:
 
 public:
   DeBruijnGraph(int k, const std::string &path);
-  int forward(int u, bool isOutgoing=false);
+  int forward(int u);
   int backward(int v);
   ~DeBruijnGraph();
 
