@@ -376,20 +376,28 @@ std::vector<std::string> DeBruijnGraph::labelV(int v) {
 
 int DeBruijnGraph::incoming(int v, const std::string &c) {
   int index = last->select(true, v);
-  int rangeStart = backward(index);
-  int rangeEnd = rangeStart + (indegree(v) + 1);
-  std::vector<std::string> nodeLabel = labelV(v);
+  if(v > 0 && v < numReads) {
+    std::string edgeLabel = "$" + std::to_string(v);
+    int nodeIndex = w->select(edgeLabel, 0);
+    return last->rank(true, nodeIndex);
+  }
 
-  if (rangeEnd > 0) {
-    for (int i = rangeStart; i < rangeEnd; i++) {
-      std::string edgeLabel = w->access(i);
+  else {
+    int rangeStart = backward(index);
+    int rangeEnd = rangeStart + (indegree(v) + 1);
+    std::vector<std::string> nodeLabel = labelV(v);
 
-      if (edgeLabel == nodeLabel[k - 1]) {
-        int rankToI = last->rank(true, i);
-        std::string _label = label(rankToI);
+    if (rangeEnd > 0) {
+      for (int i = rangeStart; i < rangeEnd; i++) {
+        std::string edgeLabel = w->access(i);
 
-        if (_label.substr(0, c.size()) == c)
-          return rankToI;
+        if (edgeLabel == nodeLabel[k - 1]) {
+          int rankToI = last->rank(true, i);
+          std::string _label = label(rankToI);
+
+          if (_label.substr(0, c.size()) == c)
+            return rankToI;
+        }
       }
     }
   }
