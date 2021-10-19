@@ -319,6 +319,10 @@ int DeBruijnGraph::indegree(int v) {
   int flaggedRank2 = 0;
   int firstIncomingEdge = backward(last->select(true, v));
 
+  if (v > 0 && v < numReads) {
+    return 1;
+  }
+
   if (v >= first["A"]) {
     std::string firstIncomingEdgeLabel = w->access(firstIncomingEdge);
 
@@ -376,7 +380,7 @@ std::vector<std::string> DeBruijnGraph::labelV(int v) {
 
 int DeBruijnGraph::incoming(int v, const std::string &c) {
   int index = last->select(true, v);
-  if(v > 0 && v < numReads) {
+  if (v > 0 && v < numReads) {
     std::string edgeLabel = "$" + std::to_string(v);
     int nodeIndex = w->select(edgeLabel, 0);
     return last->rank(true, nodeIndex);
