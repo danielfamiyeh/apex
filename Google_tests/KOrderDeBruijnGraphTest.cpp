@@ -51,14 +51,43 @@ TEST(KOrderDeBruijnGraphTest, GraphMethods) {
   ASSERT_EQ(dbg->outgoing(14, "C"), 12);
 
   // Label
-  std::string nodeLabels[15] = {
-      "$0$0$0", "$1$1$1", "$2$2$2", "ACA", "$2GA",  "$0TA",  "$1TA",
-      "CAC",    "GAC",    "TAC",    "CTC", "$2$2G", "$0$0T", "$1$1T", "ACT"};
+  std::string nodeLabels[15] = {"$0$0$0", "$1$1$1", "$2$2$2", "ACA",   "$2GA",
+                                "$0TA",   "$1TA",   "CAC",    "GAC",   "TAC",
+                                "CTC",    "$2$2G",  "$0$0T",  "$1$1T", "ACT"};
 
   for (int i = 0; i < 15; i++) {
     ASSERT_EQ(dbg->label(i), nodeLabels[i]);
   }
   // Indegree
+  // Change for pads
+  std::vector<int> indegrees{0, 0, 0, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1};
 
+  for (int i = 0; i < indegrees.size(); i++) {
+    ASSERT_EQ(dbg->indegree(i), indegrees[i]);
+  }
   // Incoming
+  typedef struct incomingStruct {
+
+    incomingStruct(std::string NodeLabel, int NodeIndex) {
+      nodeLabel = NodeLabel;
+      nodeIndex = NodeIndex;
+    }
+
+    std::string nodeLabel;
+    int nodeIndex;
+  } incoming_t;
+
+  // Fix padding
+  std::vector<incoming_t> incomings{incoming_t("A", -1),  incoming_t("C", 7),
+                                    incoming_t("C", 10),  incoming_t("T", 9),
+                                    incoming_t("$2", 11), incoming_t("$0", 12),
+                                    incoming_t("$1", 13), incoming_t("A", 3),
+                                    incoming_t("$2", 4), incoming_t("$0", 5),
+                                    incoming_t("A", 14), incoming_t("$2", 2),
+                                    incoming_t("$0", 0), incoming_t("$1", 1),
+                                    incoming_t("T", 9)};
+
+  for (int i = 0; i < incomings.size(); i++) {
+    ASSERT_EQ(dbg->incoming(i, incomings[i].nodeLabel), incomings[i].nodeIndex);
+  }
 }
