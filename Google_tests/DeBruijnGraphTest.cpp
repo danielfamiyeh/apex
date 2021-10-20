@@ -19,6 +19,8 @@ TEST(DeBruijnGraphTest, BWTMethods) {
   for (int i = 0; i < 13; i++) {
     ASSERT_EQ(dbg->backward(i), dest2[i]);
   }
+
+  delete dbg;
 }
 
 TEST(DeBruijnGraphTest, GraphMethods) {
@@ -63,4 +65,6 @@ TEST(DeBruijnGraphTest, GraphMethods) {
   ASSERT_EQ(dbg->incoming(8, "$"), 0);
   ASSERT_EQ(dbg->incoming(9, "G"), 3);
   ASSERT_EQ(dbg->incoming(10, "A"), 6);
+
+  delete dbg;
 }

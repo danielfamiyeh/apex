@@ -173,8 +173,10 @@ int WaveletTree::select(std::string c, int i) {
       n = leaves[j];
     }
   }
-  if (!n)
+  if (!n) {
+    delete _i;
     return -1;
+  }
 
   unsigned long k = codes[c]->size() - 1;
 
