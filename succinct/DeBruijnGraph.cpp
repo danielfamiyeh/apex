@@ -143,6 +143,8 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
               *flags[i].indexTo = j;
               *flags[j].indexFrom = i;
             }
+
+            delete same;
           }
         }
         // F vector
@@ -165,6 +167,16 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
   } else {
     std::cout << "Could not open file " << path << ".\n";
   }
+}
+
+DeBruijnGraph::~DeBruijnGraph() {
+  for (auto & flag : flags) {
+    delete flag.state;
+    delete flag.indexFrom;
+    delete flag.indexTo;
+  }
+  delete w;
+  delete last;
 }
 
 int DeBruijnGraph::forward(int u) {
@@ -225,6 +237,9 @@ int DeBruijnGraph::backward(int v) {
   }
 
   int edge = w->select(c, index + *indexOffset);
+
+  delete indexOffset;
+  delete minIndex;
   return edge;
 }
 
@@ -249,12 +264,15 @@ int DeBruijnGraph::outgoing(int v, const std::string &c) {
         break;
       }
     }
+
     *x = w->select(c, w->rank(c, *_v));
     *nodeIndex = last->select(true, *_v);
     *nodeIndexBefore = last->select(true, *_v - 1);
 
     if (*x > *nodeIndexBefore && *x <= *nodeIndex)
       *edgeExists = true;
+
+    delete _v;
   }
   int edge = *x;
   bool _edgeExists = *edgeExists;
@@ -285,7 +303,7 @@ std::string DeBruijnGraph::label(int v) {
         label[i] = ("$" + std::to_string(*edgeIndex));
       } else {
         *edgeIndex = backward(*edgeIndex);
-        minIndex = new int(-1);
+        *minIndex = -1;
         for (auto &it : first) {
           if (*edgeIndex >= it.second && it.second >= *minIndex) {
             *minIndex = it.second;
@@ -295,12 +313,15 @@ std::string DeBruijnGraph::label(int v) {
         }
       }
     }
+
     if (*edgeIndex == 0)
       label[k - 1] = "$0";
     std::reverse(label.begin(), label.end());
   }
 
+  delete minIndex;
   delete edgeIndex;
+
   if (v >= numReads) {
     std::string s;
     for (const auto &nucleotide : label)
@@ -346,6 +367,9 @@ int DeBruijnGraph::indegree(int v) {
       }
     }
 
+    delete nonFlaggedEdge;
+    delete nonFlaggedEdgeFound;
+
     return (flaggedRank2 - flaggedRank1) + 1;
   }
   return 0;
@@ -374,6 +398,8 @@ std::vector<std::string> DeBruijnGraph::labelV(int v) {
       label[k - 1] = "$0";
     std::reverse(label.begin(), label.end());
   }
+
+  delete edgeIndex;
 
   return label;
 }

@@ -23,6 +23,8 @@ TEST(KOrderDeBruijnGraphTest, BWTMethods) {
   for (int i = 0; i < 17; i++) {
     ASSERT_EQ(dbg->backward(i), backwardDest[i]);
   }
+
+  delete dbg;
 }
 
 TEST(KOrderDeBruijnGraphTest, GraphMethods) {
@@ -89,4 +91,6 @@ TEST(KOrderDeBruijnGraphTest, GraphMethods) {
   for (int i = 0; i < incomings.size(); i++) {
     ASSERT_EQ(dbg->incoming(i, incomings[i].nodeLabel), incomings[i].nodeIndex);
   }
+
+  delete dbg;
 }

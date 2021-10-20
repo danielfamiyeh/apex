@@ -25,6 +25,9 @@ TEST (BitVectorTest, RankTest) {
   ASSERT_EQ(b3->rank(true, 7), 3);
   ASSERT_EQ(b3->rank(false, 4), 3);
 
+  delete b1;
+  delete b2;
+  delete b3;
 }
 
 TEST (BitVectorTest, SelectTest) {
@@ -44,6 +47,10 @@ TEST (BitVectorTest, SelectTest) {
 
   ASSERT_EQ(b3->select(true, 2), 6);
   ASSERT_EQ(b3->select(false, 3), 5);
+
+  delete b1;
+  delete b2;
+  delete b3;
 }
 
 TEST (BitVector, AccessTest) {
@@ -63,4 +70,8 @@ TEST (BitVector, AccessTest) {
 
   ASSERT_EQ(b3->access(4), 1);
   ASSERT_EQ(b3->access(7), 1);
+
+  delete b1;
+  delete b2;
+  delete b3;
 }
