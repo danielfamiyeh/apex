@@ -7,24 +7,16 @@
 #include <iostream>
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "DeBruijnGraph.h"
 
-void replaceAll(std::string &str, const std::string &from,
-                const std::string &to) {
-  size_t start_pos = 0;
-  while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-    str.replace(start_pos, from.length(), to);
-    start_pos += to.length();
-  }
-}
-
 // For co-lex. sorting node matrix with edge label vector
 typedef struct nodeWithEdge {
   nodeWithEdge(std::vector<std::string> NodeLabel, std::string EdgeLabel) {
-    nodeLabel = NodeLabel;
-    edgeLabel = EdgeLabel;
+    nodeLabel = std::move(NodeLabel);
+    edgeLabel = std::move(EdgeLabel);
   }
 
   std::vector<std::string> nodeLabel;
@@ -43,7 +35,7 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
 
   if (readData.is_open()) {
     std::vector<std::string> _w;
-    std::vector<nodeWithEdge> nodesWithEdges;
+    std::vector<nodeWithEdge_t> nodesWithEdges;
 
     for (std::string read; getline(readData, read);) {
       // Read padding
@@ -170,7 +162,7 @@ DeBruijnGraph::DeBruijnGraph(int K, const std::string &path) {
 }
 
 DeBruijnGraph::~DeBruijnGraph() {
-  for (auto & flag : flags) {
+  for (auto &flag : flags) {
     delete flag.state;
     delete flag.indexFrom;
     delete flag.indexTo;
@@ -376,10 +368,11 @@ int DeBruijnGraph::indegree(int v) {
 }
 
 std::vector<std::string> DeBruijnGraph::labelV(int v) {
-  int *edgeIndex = new int(last->select(true, v));
+
   std::vector<std::string> label(k, ("$" + std::to_string(v)));
 
   if (v >= numReads) {
+    int *edgeIndex = new int(last->select(true, v));
     for (auto &it : first) {
       if (*edgeIndex >= it.second) {
         label[0] = it.first;
@@ -397,9 +390,9 @@ std::vector<std::string> DeBruijnGraph::labelV(int v) {
     if (*edgeIndex == 0)
       label[k - 1] = "$0";
     std::reverse(label.begin(), label.end());
-  }
 
-  delete edgeIndex;
+    delete edgeIndex;
+  }
 
   return label;
 }

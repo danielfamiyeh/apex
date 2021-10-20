@@ -32,8 +32,8 @@ void printTree(WaveletNode *v) {
 void deleteNode(WaveletNode *v) { delete v; }
 
 WaveletTree::WaveletTree(std::vector<std::string> alphabet,
-                         std::vector<std::string> str) {
-  root = partition(alphabet, str, true);
+                         const std::vector<std::string>& str) {
+  root = partition(std::move(alphabet), str);
   inferCodes();
 }
 
@@ -45,8 +45,7 @@ WaveletTree::~WaveletTree() {
 }
 
 WaveletNode *WaveletTree::partition(std::vector<std::string> alphabet,
-                                    const std::vector<std::string>& str,
-                                    bool start = false) {
+                                    const std::vector<std::string>& str) {
   int alphaMidpoint = (int)(alphabet.size() / 2);
   std::map<std::string, bool> charMap;
   BitVector<bool> bitVector;
