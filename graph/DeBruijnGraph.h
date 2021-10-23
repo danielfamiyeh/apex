@@ -11,9 +11,9 @@
 
 #include <map>
 
-#include "BitVector.h"
+#include "../util/BitVector.h"
 
-#include "WaveletTree.h"
+#include "../tree/WaveletTree.h"
 
 class DeBruijnGraph {
 

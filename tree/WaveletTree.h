@@ -11,11 +11,11 @@
 
 #include <unordered_map>
 
-#include "BitVector.h"
+#include "../util/BitVector.h"
 
-#include "ISuccinctStructure.h"
+#include "../util/ISuccinctStructure.h"
 
-#include "../tree/Vertex.h"
+#include "Vertex.h"
 
 typedef Vertex<BitVector<bool>, std::string, bool> WaveletNode;
 

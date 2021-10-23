@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "../succinct/WaveletTree.cpp"
+#include "../tree/WaveletTree.cpp"
 #include "lib/googletest/include/gtest/gtest.h"
 
 TEST(WaveletTreeTest, AccessTest) {

@@ -5,10 +5,10 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 set(files
     ../tree/Vertex.h
     ../tree/Vertex.cpp
-    ../succinct/BitVector.h
-    ../succinct/BitVector.cpp
-        ../succinct/DeBruijnGraph.h
-        ../succinct/DeBruijnGraph.cpp
+        ../util/BitVector.h
+        ../util/BitVector.cpp
+        ../graph/DeBruijnGraph.h
+        ../graph/DeBruijnGraph.cpp
         DeBruijnGraphTest.cpp KOrderDeBruijnGraphTest.cpp)
 
 # adding the Google_Tests_run target
