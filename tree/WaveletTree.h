@@ -25,11 +25,11 @@ private:
   std::vector<WaveletNode *> leaves;
   WaveletNode *root;
   WaveletNode *partition(std::vector<std::string> alphabet,
-                         const std::vector<std::string>& str, bool start);
+                         const std::vector<std::string>& str);
   void inferCodes();
 
 public:
-  WaveletTree(std::vector<std::string> alphabet, std::vector<std::string> str);
+  WaveletTree(std::vector<std::string> alphabet, const std::vector<std::string>& str);
   ~WaveletTree();
 
   void preorder(WaveletNode *v, void (*fun)(WaveletNode *));

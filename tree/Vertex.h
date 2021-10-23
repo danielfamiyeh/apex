@@ -5,7 +5,7 @@
 #ifndef DNASSEMBLER_VERTEX_H
 #define DNASSEMBLER_VERTEX_H
 
-template <typename T, typename T2, typename  T3> class Vertex {
+template <typename T, typename T2, typename T3> class Vertex {
 
 private:
   Vertex *left;

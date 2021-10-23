@@ -23,7 +23,6 @@ class DeBruijnGraph {
       indexTo = new int(IndexTo);
       indexFrom = new int(IndexFrom);
     }
-
     bool *state;
     int *indexTo;
     int *indexFrom;
