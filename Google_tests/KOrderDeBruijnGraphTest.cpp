@@ -2,7 +2,7 @@
 // Created by daniel on 17/10/2021.
 //
 
-#include "../succinct/DeBruijnGraph.h"
+#include "../graph/DeBruijnGraph.h"
 #include "lib/googletest/include/gtest/gtest.h"
 
 #include <iostream>

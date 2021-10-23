@@ -2,10 +2,8 @@
 // Created by daniel on 15/10/2021.
 //
 
+#include "../util/BitVector.h"
 #include "lib/googletest/include/gtest/gtest.h"
-#include "../succinct/BitVector.h"
-
-
 
 TEST (BitVectorTest, RankTest) {
   bool v1[6] = {true, false, true, true, false, true};

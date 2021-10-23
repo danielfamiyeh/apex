@@ -4,7 +4,7 @@
 
 #include "Vertex.h"
 
-#include "../succinct/BitVector.h"
+#include "../util/BitVector.h"
 
 // Constructor
 template <typename T, typename T2, typename T3>

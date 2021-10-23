@@ -1,0 +1,10 @@
+//
+// Created by daniel on 23/10/2021.
+//
+
+#ifndef DNASSEMBLER_PAIREDDEBRUIJNGRAPH_H
+#define DNASSEMBLER_PAIREDDEBRUIJNGRAPH_H
+
+class PairedDeBruijnGraph {};
+
+#endif // DNASSEMBLER_PAIREDDEBRUIJNGRAPH_H

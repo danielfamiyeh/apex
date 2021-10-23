@@ -11,6 +11,7 @@ template <typename T> BitVector<T>::BitVector() = default;
 
 template <typename T> BitVector<T>::BitVector(T data[], int n) {
   std::copy(data, data + n, std::back_inserter(vector));
+
 }
 
 template <typename T> T BitVector<T>::access(int i) { return vector[i]; }
