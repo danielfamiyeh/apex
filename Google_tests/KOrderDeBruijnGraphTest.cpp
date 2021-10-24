@@ -49,8 +49,8 @@ TEST(KOrderDeBruijnGraphTest, GraphMethods) {
   ASSERT_EQ(dbg->outgoing(9, "T"), 16);
   ASSERT_EQ(dbg->outgoing(10, "$2"), 2);
   ASSERT_EQ(dbg->outgoing(11, "A"), 4);
-  //  ASSERT_EQ(dbg->outgoing(12, "A"), 5);
-  //  ASSERT_EQ(dbg->outgoing(13, "A"), 6);
+//    ASSERT_EQ(dbg->outgoing(12, "A"), 5);
+//    ASSERT_EQ(dbg->outgoing(13, "A"), 6);
   ASSERT_EQ(dbg->outgoing(14, "C"), 12);
 
   // Label
