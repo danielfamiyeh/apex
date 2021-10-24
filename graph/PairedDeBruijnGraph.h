@@ -9,7 +9,7 @@
 
 class PairedDeBruijnGraph {
   typedef struct flag {
-    explicit flag(bool State=false, int IndexTo = -1, int IndexFrom = -1) {
+    explicit flag(bool State = false, int IndexTo = -1, int IndexFrom = -1) {
       state = new bool(State);
       indexTo = new int(IndexTo);
       indexFrom = new int(IndexFrom);
@@ -34,10 +34,22 @@ private:
   std::vector<flag_t> forwardFlags;
   std::vector<flag_t> reverseFlags;
 
-
 public:
   PairedDeBruijnGraph(const std::string &path1, const std::string &path2,
                       int K);
+  ~PairedDeBruijnGraph();
+
+  void print(const std::string &direction = "both");
+  int forward(int u, const std::string &direction = "forward");
+  int backward(int v, const std::string &direction = "forward");
+  int outdegree(int u, const std::string &direction = "forward");
+  int outgoing(int u, const std::string &direction = "forward");
+  std::string label(int u, const std::string &direction = "forward");
+  int indegree(int u, const std::string &direction = "forward");
+  std::vector<std::string> labelV(int u,
+                                  const std::string &direction = "forward");
+  int incoming(int u, const std::string &c,
+               const std::string &direction = "forward");
 };
 
 #endif // DNASSEMBLER_PAIREDDEBRUIJNGRAPH_H
