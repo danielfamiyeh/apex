@@ -198,81 +198,161 @@ PairedDeBruijnGraph::PairedDeBruijnGraph(const std::string &path1,
   bool *forwardFlag = new bool(false);
   bool *reverseFlag = new bool(false);
 
-  for (int i = 0; i < forwardNodes.size(); i++) {
-    if (i == forwardNodes.size() - 1) {
-      forwardLast->pushBack(true);
-      reverseLast->pushBack(true);
-      continue;
-    }
+  for (int i = 0; i < forwardNodes.size() - 1 || i < reverseNodes.size() - 1;
+       i++) {
+    bool inForwardRange = i < forwardNodes.size() - 1;
+    bool inReverseRange = i < reverseNodes.size() - 1;
+    if (inForwardRange)
+      forwardFlags.emplace_back(false);
+    if (inReverseRange)
+      reverseFlags.emplace_back(false);
 
-    for (int j = 0; j < k && !*forwardFlag && !*reverseFlag; j++) {
-      if (forwardNodes[i][j] != forwardNodes[i + 1][j])
+    for (int j = 0; j < k && (!*forwardFlag || !*reverseFlag); j++) {
+      if (inForwardRange && forwardNodes[i][j] != forwardNodes[i + 1][j])
         *forwardFlag = true;
-      if (reverseNodes[i][j] != reverseNodes[i + 1][j])
+      if (inReverseRange && reverseNodes[i][j] != reverseNodes[i + 1][j])
         *reverseFlag = true;
     }
 
-    forwardLast->pushBack(*forwardFlag);
-    reverseLast->pushBack(*reverseFlag);
+    if (inForwardRange)
+      forwardLast->pushBack(*forwardFlag);
+    if (inReverseRange)
+      reverseLast->pushBack(*reverseFlag);
 
     *forwardFlag = false;
     *reverseFlag = false;
 
-    forwardFlags.emplace_back(false);
-    reverseFlags.emplace_back(false);
-
     if (i > 0) {
       for (int j = 0; j < i; j++) {
-        if(forwardEdges->access(j) == forwardEdges->access(i)) {
-          *forwardFlag = true;
 
-          for(int l = 1; l<k && *forwardFlag; l++) {
-            if(forwardNodes[j][l] != forwardNodes[i][l]) {
-              *forwardFlag = false;
+        if (inForwardRange) {
+          if (forwardEdges->access(j) == forwardEdges->access(i)) {
+            *forwardFlag = true;
+
+            for (int l = 1; l < k && *forwardFlag; l++) {
+              if (forwardNodes[j][l] != forwardNodes[i][l]) {
+                *forwardFlag = false;
+              }
             }
+          }
+
+          if (*forwardFlag) {
+            *forwardFlags[i].state = true;
+            *forwardFlags[i].indexTo = j;
+            *forwardFlags[j].indexFrom = i;
+            *forwardFlag = false;
           }
         }
 
-        if(reverseEdges->access(j) == reverseEdges->access(i)) {
-          *reverseFlag = true;
+        if (inReverseRange) {
+          if (reverseEdges->access(j) == reverseEdges->access(i)) {
+            *reverseFlag = true;
 
-          for(int l = 1; l<k && *reverseFlag; l++) {
-            if(reverseNodes[j][l] != reverseNodes[i][l]) {
-              *reverseFlag = false;
+            for (int l = 1; l < k && *reverseFlag; l++) {
+              if (reverseNodes[j][l] != reverseNodes[i][l]) {
+                *reverseFlag = false;
+              }
             }
           }
-        }
 
-        if(*forwardFlag) {
-          *forwardFlags[i].state = true;
-          *forwardFlags[i].indexTo = j;
-          *forwardFlags[j].indexFrom = i;
-          *forwardFlag = false;
-        }
-
-        if(*reverseFlag) {
-          *reverseFlags[i].state = true;
-          *reverseFlags[i].indexTo = j;
-          *reverseFlags[j].indexFrom = i;
-          *reverseFlag = false;
+          if (*reverseFlag) {
+            *reverseFlags[i].state = true;
+            *reverseFlags[i].indexTo = j;
+            *reverseFlags[j].indexFrom = i;
+            *reverseFlag = false;
+          }
         }
       }
 
-      if(forwardNodes[i][k-1] != forwardNodes[i-1][k-1])
-        forwardFirst[forwardNodes[i][k-1]] = i;
+      if (inForwardRange) {
+        if (forwardNodes[i][k - 1] != forwardNodes[i - 1][k - 1])
+          forwardFirst[forwardNodes[i][k - 1]] = i;
+      }
 
-      if(reverseNodes[i][k-1] != reverseNodes[i-1][k-1])
-        reverseFirst[reverseNodes[i][k-1]] = i;
+      if (inReverseRange) {
+        if (reverseNodes[i][k - 1] != reverseNodes[i - 1][k - 1])
+          reverseFirst[reverseNodes[i][k - 1]] = i;
+      }
     }
   }
 
-  for(auto flag: reverseFlags) {
-    std::cout << *flag.state;
-  }
+  forwardLast->pushBack(true);
+  reverseLast->pushBack(true);
 
   std::cout << "\n";
 
+  // Prints Forward strand
+//  for (int i = 0; i < forwardNodes.size(); i++) {
+//    std::cout << forwardLast->rank(true, i) << " " << i << " "
+//              << forwardLast->access(i) << "  ";
+//    for (int j = 0; j < k; j++) {
+//      std::cout << forwardNodes[i][j] << " ";
+//    }
+//    std::cout << " " << forwardEdges->access(i) << " "
+//              << (*forwardFlags[i].state ? "-\n" : "\n");
+//  }
+
+  std::cout << "\n\n";
+
+  std::cout << reverseNodes.size() << " | " << reverseFlags.size();
+
+  // Reverse strand
+  for (int i = 0; i < reverseNodes.size(); i++) {
+    //    std::cout << reverseLast->rank(true, i) << " " << i << " "
+    //              << reverseLast->access(i) << "  ";
+    for (int j = 0; j < k; j++) {
+      //      std::cout << reverseNodes[i][j] << " ";
+    }
+    //    std::cout << " " << reverseEdges->access(i) << " "
+    //              << (*reverseFlags[i].state ? "-\n" : "\n");
+  }
+
   delete forwardFlag;
   delete reverseFlag;
-  std::cout << forwardRead << " | " << reverseRead << std::endl;
+}
+
+int PairedDeBruijnGraph::forward(int u, const std::string &direction) {
+  WaveletTree *w;
+  BitVector<bool> *last;
+  std::map<std::string, int> first;
+  std::vector<flag_t> flags;
+
+  if (direction == "forward") {
+    w = forwardEdges;
+    last = forwardLast;
+    flags = forwardFlags;
+    first = forwardFirst;
+  } else {
+    w = reverseEdges;
+    last = reverseLast;
+    flags = reverseFlags;
+    first = reverseFirst;
+  }
+
+  std::string c = w->access(u);
+  int *_u = new int(flags[u].state ? *flags[u].indexTo : u);
+  int *rankC = new int(w->rank(c, *_u));
+
+  /*
+   * Since flags and edge labels are stored in separate structures
+   * once W.rank(c, *_u) is calculated, traverse the interval [0, _u)
+   * if W[i] == c and a flag is set at i then W[i] ∈ A⁻ ==> W[i] != c
+   * so decrement rankC since it was counted in W.rank(c, *_u) originally.
+   */
+  for (int i = 0; i < *_u; i++) {
+    if (*flags[i].state && w->access(i) == c) {
+      *rankC -= 1;
+    }
+  }
+
+  int startPosition = first[c];
+  int rankToBase = last->rank(true, startPosition);
+  int nodeIndex = last->select(true, (*rankC + rankToBase));
+
+  delete _u;
+  delete rankC;
+  delete last;
+  delete w;
+
+  return nodeIndex;
 }
