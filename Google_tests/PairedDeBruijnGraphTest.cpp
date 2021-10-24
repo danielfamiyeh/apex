@@ -21,5 +21,11 @@ TEST(PairedDeBruijnGraphTest, BWTMethods) {
   ASSERT_EQ(graph->backward(45, "forward"), 1);
   ASSERT_EQ(graph->backward(42, "reverse"), 1);
 
+  ASSERT_EQ(graph->outdegree(18, "forward"), 1);
+  ASSERT_EQ(graph->outdegree(21, "forward"), 2);
+
+  ASSERT_EQ(graph->outdegree(3, "reverse"), 1);
+  ASSERT_EQ(graph->outdegree(4, "reverse"), 2);
+
   delete graph;
 }
