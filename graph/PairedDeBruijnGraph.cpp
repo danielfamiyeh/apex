@@ -13,15 +13,15 @@
 typedef struct tentativeNode {
 
   tentativeNode(std::vector<std::string> NodeLabel, std::string EdgeLabel,
-                unsigned int LinkIndex = -1) {
+                unsigned long LinkIndex = -1) {
     nodeLabel = std::move(NodeLabel);
     edgeLabel = std::move(EdgeLabel);
-    linkIndex = LinkIndex;
+    linkIndex = *new unsigned long(LinkIndex);
   }
 
   std::vector<std::string> nodeLabel;
   std::string edgeLabel;
-  unsigned int linkIndex;
+  unsigned long linkIndex;
 } tentativeNode_t;
 
 PairedDeBruijnGraph::PairedDeBruijnGraph(const std::string &path1,
@@ -139,5 +139,140 @@ PairedDeBruijnGraph::PairedDeBruijnGraph(const std::string &path1,
     }
   }
 
+  /**
+   * First sort reverse strand nodes and W tree by co-lex
+   * ordering of nodes breaking tie-breaks via edge labels
+   */
+  std::sort(reverseNodesWithEdges.begin(), reverseNodesWithEdges.end(),
+            [this](auto const &a, auto const &b) {
+              for (int i = 0; i < k; i++) {
+                if (a.nodeLabel[i] == b.nodeLabel[i])
+                  continue;
+                return a.nodeLabel[i] < b.nodeLabel[i];
+              }
+              return a.edgeLabel < b.edgeLabel;
+            });
+
+  /**
+   * For reverse strand store edge labels in tentative W and node labels
+   * Modify link indexes for forward strand to match sorted reverse strands
+   */
+  for (int i = 0; i < reverseNodesWithEdges.size(); i++) {
+    auto &nodesWithEdge = reverseNodesWithEdges[i];
+
+    std::reverse(nodesWithEdge.nodeLabel.begin(),
+                 nodesWithEdge.nodeLabel.end());
+    reverseNodes.push_back(nodesWithEdge.nodeLabel);
+    _reverseEdges.push_back(nodesWithEdge.edgeLabel);
+
+    forwardNodesWithEdges[nodesWithEdge.linkIndex].linkIndex = i;
+  }
+
+  /**
+   * Then co-lex sort forward strand add to corresponding data structures
+   */
+  std::sort(forwardNodesWithEdges.begin(), forwardNodesWithEdges.end(),
+            [this](auto const &a, auto const &b) {
+              for (int i = 0; i < k; i++) {
+                if (a.nodeLabel[i] == b.nodeLabel[i])
+                  continue;
+                return a.nodeLabel[i] < b.nodeLabel[i];
+              }
+              return a.edgeLabel < b.edgeLabel;
+            });
+
+  for (auto &nodesWithEdge : forwardNodesWithEdges) {
+    std::reverse(nodesWithEdge.nodeLabel.begin(),
+                 nodesWithEdge.nodeLabel.end());
+    forwardNodes.push_back(nodesWithEdge.nodeLabel);
+    _forwardEdges.push_back(nodesWithEdge.edgeLabel);
+
+    linkers.push_back(nodesWithEdge.linkIndex);
+  }
+
+  // W Trees
+  forwardEdges = new WaveletTree(forwardAlphabet, _forwardEdges);
+  reverseEdges = new WaveletTree(reverseAlphabet, _reverseEdges);
+
+  // L Vectors
+  bool *forwardFlag = new bool(false);
+  bool *reverseFlag = new bool(false);
+
+  for (int i = 0; i < forwardNodes.size(); i++) {
+    if (i == forwardNodes.size() - 1) {
+      forwardLast->pushBack(true);
+      reverseLast->pushBack(true);
+      continue;
+    }
+
+    for (int j = 0; j < k && !*forwardFlag && !*reverseFlag; j++) {
+      if (forwardNodes[i][j] != forwardNodes[i + 1][j])
+        *forwardFlag = true;
+      if (reverseNodes[i][j] != reverseNodes[i + 1][j])
+        *reverseFlag = true;
+    }
+
+    forwardLast->pushBack(*forwardFlag);
+    reverseLast->pushBack(*reverseFlag);
+
+    *forwardFlag = false;
+    *reverseFlag = false;
+
+    forwardFlags.emplace_back(false);
+    reverseFlags.emplace_back(false);
+
+    if (i > 0) {
+      for (int j = 0; j < i; j++) {
+        if(forwardEdges->access(j) == forwardEdges->access(i)) {
+          *forwardFlag = true;
+
+          for(int l = 1; l<k && *forwardFlag; l++) {
+            if(forwardNodes[j][l] != forwardNodes[i][l]) {
+              *forwardFlag = false;
+            }
+          }
+        }
+
+        if(reverseEdges->access(j) == reverseEdges->access(i)) {
+          *reverseFlag = true;
+
+          for(int l = 1; l<k && *reverseFlag; l++) {
+            if(reverseNodes[j][l] != reverseNodes[i][l]) {
+              *reverseFlag = false;
+            }
+          }
+        }
+
+        if(*forwardFlag) {
+          *forwardFlags[i].state = true;
+          *forwardFlags[i].indexTo = j;
+          *forwardFlags[j].indexFrom = i;
+          *forwardFlag = false;
+        }
+
+        if(*reverseFlag) {
+          *reverseFlags[i].state = true;
+          *reverseFlags[i].indexTo = j;
+          *reverseFlags[j].indexFrom = i;
+          *reverseFlag = false;
+        }
+      }
+
+      if(forwardNodes[i][k-1] != forwardNodes[i-1][k-1])
+        forwardFirst[forwardNodes[i][k-1]] = i;
+
+      if(reverseNodes[i][k-1] != reverseNodes[i-1][k-1])
+        reverseFirst[reverseNodes[i][k-1]] = i;
+    }
+  }
+
+  for(auto flag: reverseFlags) {
+    std::cout << *flag.state;
+  }
+
+  std::cout << "\n";
+
+  delete forwardFlag;
+  delete reverseFlag;
   std::cout << forwardRead << " | " << reverseRead << std::endl;
 }

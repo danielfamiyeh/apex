@@ -8,6 +8,17 @@
 #include "DeBruijnGraph.h"
 
 class PairedDeBruijnGraph {
+  typedef struct flag {
+    explicit flag(bool State=false, int IndexTo = -1, int IndexFrom = -1) {
+      state = new bool(State);
+      indexTo = new int(IndexTo);
+      indexFrom = new int(IndexFrom);
+    }
+    bool *state;
+    int *indexTo;
+    int *indexFrom;
+  } flag_t;
+
 private:
   unsigned int k;
   WaveletTree *forwardEdges;
@@ -19,6 +30,10 @@ private:
   int numNodes;
   int forwardNumReads;
   int reverseNumReads;
+  std::vector<unsigned long> linkers;
+  std::vector<flag_t> forwardFlags;
+  std::vector<flag_t> reverseFlags;
+
 
 public:
   PairedDeBruijnGraph(const std::string &path1, const std::string &path2,
