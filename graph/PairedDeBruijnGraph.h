@@ -41,7 +41,7 @@ public:
 
   void print(const std::string &direction = "both");
   int forward(int u, const std::string &direction = "forward");
-  int backward(int v, const std::string &direction = "forward");
+  int backward(int e, const std::string &direction = "forward");
   int outdegree(int u, const std::string &direction = "forward");
   int outgoing(int u, const std::string &direction = "forward");
   std::string label(int u, const std::string &direction = "forward");

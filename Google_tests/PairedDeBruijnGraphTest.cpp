@@ -14,4 +14,12 @@ TEST(PairedDeBruijnGraphTest, BWTMethods) {
   auto *graph =
       new PairedDeBruijnGraph(ecoliPath + "_1.fastq", ecoliPath + "_2.fastq",
                               5);
+
+  ASSERT_EQ(graph->forward(1, "forward"), 45);
+  ASSERT_EQ(graph->forward(1, "reverse"), 42);
+
+//  ASSERT_EQ(graph->backward(45, "forward"), 1);
+//  ASSERT_EQ(graph->backward(42, "reverse"), 1);
+
+  delete graph;
 }

@@ -16,7 +16,7 @@ typedef struct tentativeNode {
                 unsigned long LinkIndex = -1) {
     nodeLabel = std::move(NodeLabel);
     edgeLabel = std::move(EdgeLabel);
-    linkIndex = *new unsigned long(LinkIndex);
+    linkIndex = LinkIndex;
   }
 
   std::vector<std::string> nodeLabel;
@@ -165,7 +165,10 @@ PairedDeBruijnGraph::PairedDeBruijnGraph(const std::string &path1,
     reverseNodes.push_back(nodesWithEdge.nodeLabel);
     _reverseEdges.push_back(nodesWithEdge.edgeLabel);
 
-    forwardNodesWithEdges[nodesWithEdge.linkIndex].linkIndex = i;
+    // Reassignment with pointer causes segfault for some reason
+    forwardNodesWithEdges[nodesWithEdge.linkIndex].linkIndex -=
+        forwardNodesWithEdges[nodesWithEdge.linkIndex].linkIndex;
+    forwardNodesWithEdges[nodesWithEdge.linkIndex].linkIndex += i;
   }
 
   /**
@@ -198,8 +201,7 @@ PairedDeBruijnGraph::PairedDeBruijnGraph(const std::string &path1,
   bool *forwardFlag = new bool(false);
   bool *reverseFlag = new bool(false);
 
-  for (int i = 0; i < forwardNodes.size() || i < reverseNodes.size();
-       i++) {
+  for (int i = 0; i < forwardNodes.size() || i < reverseNodes.size(); i++) {
     bool inForwardRange = i < forwardNodes.size() - 1;
     bool inReverseRange = i < reverseNodes.size() - 1;
     if (inForwardRange || i == forwardNodes.size() - 1)
@@ -282,75 +284,152 @@ PairedDeBruijnGraph::PairedDeBruijnGraph(const std::string &path1,
   std::cout << "\n";
 
   // Prints Forward strand
-  for (int i = 0; i < forwardNodes.size(); i++) {
-    std::cout << forwardLast->rank(true, i) << " " << i << " "
-              << forwardLast->access(i) << "  ";
-    for (int j = 0; j < k; j++) {
-      std::cout << forwardNodes[i][j] << " ";
-    }
-    std::cout << " " << forwardEdges->access(i) << " "
-              << (*forwardFlags[i].state ? "-\n" : "\n");
-  }
-
-  std::cout << "\n\n";
+  //  for (int i = 0; i < forwardNodes.size(); i++) {
+  //    std::cout << forwardLast->rank(true, i) << " " << i << " "
+  //              << forwardLast->access(i) << "  ";
+  //    for (int j = 0; j < k; j++) {
+  //      std::cout << forwardNodes[i][j] << " ";
+  //    }
+  //    std::cout << " " << forwardEdges->access(i) << " "
+  //              << (*forwardFlags[i].state ? "-\n" : "\n");
+  //  }
+  //
+  //  std::cout << "\n\n";
 
   // Reverse strand
-  for (int i = 0; i < reverseNodes.size(); i++) {
-        std::cout << reverseLast->rank(true, i) << " " << i << " "
-                  << reverseLast->access(i) << "  ";
-    for (int j = 0; j < k; j++) {
-            std::cout << reverseNodes[i][j] << " ";
-    }
-        std::cout << " " << reverseEdges->access(i) << " "
-                  << (*reverseFlags[i].state ? "-\n" : "\n");
-  }
+//    for (int i = 0; i < reverseNodes.size(); i++) {
+//          std::cout << reverseLast->rank(true, i) << " " << i << " "
+//                    << reverseLast->access(i) << "  ";
+//      for (int j = 0; j < k; j++) {
+//              std::cout << reverseNodes[i][j] << " ";
+//      }
+//          std::cout << " " << reverseEdges->access(i) << " "
+//                    << (*reverseFlags[i].state ? "-\n" : "\n");
+//    }
 
   delete forwardFlag;
   delete reverseFlag;
 }
 
-int PairedDeBruijnGraph::forward(int u, const std::string &direction) {
-  WaveletTree *w;
-  BitVector<bool> *last;
-  std::map<std::string, int> first;
-  std::vector<flag_t> flags;
-
-  if (direction == "forward") {
-    w = forwardEdges;
-    last = forwardLast;
-    flags = forwardFlags;
-    first = forwardFirst;
-  } else {
-    w = reverseEdges;
-    last = reverseLast;
-    flags = reverseFlags;
-    first = reverseFirst;
+PairedDeBruijnGraph::~PairedDeBruijnGraph() {
+  for(auto &flag: forwardFlags) {
+    delete flag.state;
+    delete flag.indexFrom;
+    delete flag.indexTo;
   }
 
-  std::string c = w->access(u);
-  int *_u = new int(flags[u].state ? *flags[u].indexTo : u);
-  int *rankC = new int(w->rank(c, *_u));
+  for(auto &flag: reverseFlags) {
+    delete flag.state;
+    delete flag.indexFrom;
+    delete flag.indexTo;
+  }
 
-  /*
+  delete forwardEdges;
+  delete reverseEdges;
+
+  delete forwardLast;
+  delete reverseLast;
+}
+
+int PairedDeBruijnGraph::forward(int u, const std::string &direction) {
+  int *nodeIndex = new int(-1);
+  if(direction == "forward") {
+    std::string c = forwardEdges->access(u);
+    int *_u = new int(forwardFlags[u].state ? *forwardFlags[u].indexTo : u);
+    int *rankC = new int(forwardEdges->rank(c, *_u));
+
+    /*
    * Since flags and edge labels are stored in separate structures
    * once W.rank(c, *_u) is calculated, traverse the interval [0, _u)
    * if W[i] == c and a flag is set at i then W[i] ∈ A⁻ ==> W[i] != c
    * so decrement rankC since it was counted in W.rank(c, *_u) originally.
-   */
-  for (int i = 0; i < *_u; i++) {
-    if (*flags[i].state && w->access(i) == c) {
-      *rankC -= 1;
+     */
+    for (int i = 0; i < *_u; i++) {
+      if (*forwardFlags[i].state && forwardEdges->access(i) == c) {
+        *rankC -= 1;
+      }
     }
+
+    int startPosition = forwardFirst[c];
+    int rankToBase = forwardLast->rank(true, startPosition);
+    *nodeIndex = forwardLast->select(true, (*rankC + rankToBase));
+
+    delete _u;
+    delete rankC;
   }
 
-  int startPosition = first[c];
-  int rankToBase = last->rank(true, startPosition);
-  int nodeIndex = last->select(true, (*rankC + rankToBase));
+  else {
+    std::string c = reverseEdges->access(u);
+    int *_u = new int(reverseFlags[u].state ? *reverseFlags[u].indexTo : u);
+    int *rankC = new int(reverseEdges->rank(c, *_u));
 
-  delete _u;
-  delete rankC;
-  delete last;
-  delete w;
+    for (int i = 0; i < *_u; i++) {
+      if (*reverseFlags[i].state && reverseEdges->access(i) == c) {
+        *rankC -= 1;
+      }
+    }
 
-  return nodeIndex;
+    int startPosition = reverseFirst[c];
+    int rankToBase = reverseLast->rank(true, startPosition);
+    *nodeIndex = reverseLast->select(true, (*rankC + rankToBase));
+
+    delete _u;
+    delete rankC;
+  }
+  return *nodeIndex;
+}
+
+int PairedDeBruijnGraph::backward(int e, const std::string &direction) {
+  std::map<std::string, int> first;
+  std::vector<flag_t> flags;
+  //  BitVector<bool> *last = nullptr;
+  //  WaveletTree *w = nullptr;
+
+  std::string c = "$0";
+  int *minIndex = new int(-1);
+
+  //  if (direction == "forward") {
+  //    w = forwardEdges;
+  //    last = forwardLast;
+  //    flags = forwardFlags;
+  //    first = forwardFirst;
+  //  } else {
+  //    w = reverseEdges;
+  //    last = reverseLast;
+  //    flags = reverseFlags;
+  //    first = reverseFirst;
+  //  }
+
+  //  for (auto &it : first) {
+  //    if (e >= it.second && it.second >= *minIndex) {
+  //      c = it.first;
+  //      *minIndex = it.second;
+  //    }
+  //  }
+
+  //  int rankToBase = last->rank(true, first[c]);
+  // int rankToCurrentEdge = last->rank(true, (e));
+  //  int index = rankToCurrentEdge - rankToBase;
+
+  /*
+   * When calculating the edge index, w.select() won't take into
+   * account flagged edges. We define an offset and increment for every
+   * flagged c over the interval [0, w.select(c, index+ 1)).
+   * This ensures that we skip past flagged edges on the final
+   * select call.
+   */
+
+  //  int *indexOffset = new int(0);
+  //  for (int i = 0; i < w->select(c, index + 1); i++) {
+  //    if (*flags[i].state && w->access(i) == c) {
+  //      *indexOffset += 1;
+  //    }
+  //  }
+
+  int edge = 0; // w->select(c, index + *indexOffset);
+
+  //  delete indexOffset;
+  //  delete minIndex;
+
+  return edge;
 }
