@@ -198,13 +198,13 @@ PairedDeBruijnGraph::PairedDeBruijnGraph(const std::string &path1,
   bool *forwardFlag = new bool(false);
   bool *reverseFlag = new bool(false);
 
-  for (int i = 0; i < forwardNodes.size() - 1 || i < reverseNodes.size() - 1;
+  for (int i = 0; i < forwardNodes.size() || i < reverseNodes.size();
        i++) {
     bool inForwardRange = i < forwardNodes.size() - 1;
     bool inReverseRange = i < reverseNodes.size() - 1;
-    if (inForwardRange)
+    if (inForwardRange || i == forwardNodes.size() - 1)
       forwardFlags.emplace_back(false);
-    if (inReverseRange)
+    if (inReverseRange || i == reverseNodes.size() - 1)
       reverseFlags.emplace_back(false);
 
     for (int j = 0; j < k && (!*forwardFlag || !*reverseFlag); j++) {
@@ -282,29 +282,27 @@ PairedDeBruijnGraph::PairedDeBruijnGraph(const std::string &path1,
   std::cout << "\n";
 
   // Prints Forward strand
-//  for (int i = 0; i < forwardNodes.size(); i++) {
-//    std::cout << forwardLast->rank(true, i) << " " << i << " "
-//              << forwardLast->access(i) << "  ";
-//    for (int j = 0; j < k; j++) {
-//      std::cout << forwardNodes[i][j] << " ";
-//    }
-//    std::cout << " " << forwardEdges->access(i) << " "
-//              << (*forwardFlags[i].state ? "-\n" : "\n");
-//  }
+  for (int i = 0; i < forwardNodes.size(); i++) {
+    std::cout << forwardLast->rank(true, i) << " " << i << " "
+              << forwardLast->access(i) << "  ";
+    for (int j = 0; j < k; j++) {
+      std::cout << forwardNodes[i][j] << " ";
+    }
+    std::cout << " " << forwardEdges->access(i) << " "
+              << (*forwardFlags[i].state ? "-\n" : "\n");
+  }
 
   std::cout << "\n\n";
 
-  std::cout << reverseNodes.size() << " | " << reverseFlags.size();
-
   // Reverse strand
   for (int i = 0; i < reverseNodes.size(); i++) {
-    //    std::cout << reverseLast->rank(true, i) << " " << i << " "
-    //              << reverseLast->access(i) << "  ";
+        std::cout << reverseLast->rank(true, i) << " " << i << " "
+                  << reverseLast->access(i) << "  ";
     for (int j = 0; j < k; j++) {
-      //      std::cout << reverseNodes[i][j] << " ";
+            std::cout << reverseNodes[i][j] << " ";
     }
-    //    std::cout << " " << reverseEdges->access(i) << " "
-    //              << (*reverseFlags[i].state ? "-\n" : "\n");
+        std::cout << " " << reverseEdges->access(i) << " "
+                  << (*reverseFlags[i].state ? "-\n" : "\n");
   }
 
   delete forwardFlag;
