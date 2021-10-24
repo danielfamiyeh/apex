@@ -297,15 +297,15 @@ PairedDeBruijnGraph::PairedDeBruijnGraph(const std::string &path1,
   //  std::cout << "\n\n";
 
   // Reverse strand
-  //    for (int i = 0; i < reverseNodes.size(); i++) {
-  //          std::cout << reverseLast->rank(true, i) << " " << i << " "
-  //                    << reverseLast->access(i) << "  ";
-  //      for (int j = 0; j < k; j++) {
-  //              std::cout << reverseNodes[i][j] << " ";
-  //      }
-  //          std::cout << " " << reverseEdges->access(i) << " "
-  //                    << (*reverseFlags[i].state ? "-\n" : "\n");
+  //  for (int i = 0; i < reverseNodes.size(); i++) {
+  //    std::cout << reverseLast->rank(true, i) << " " << i << " "
+  //              << reverseLast->access(i) << "  ";
+  //    for (int j = 0; j < k; j++) {
+  //      std::cout << reverseNodes[i][j] << " ";
   //    }
+  //    std::cout << " " << reverseEdges->access(i) << " "
+  //              << (*reverseFlags[i].state ? "-\n" : "\n");
+  //  }
 
   delete forwardFlag;
   delete reverseFlag;
@@ -402,11 +402,11 @@ int PairedDeBruijnGraph::backward(int e, const std::string &direction) {
     int index = rankToCurrentEdge - rankToBase;
 
     /*
-   * When calculating the edge index, w.select() won't take into
-   * account flagged edges. So define an offset and increment for every
-   * flagged c over the interval [0, w.select(c, index+ 1)).
-   * This ensures that we skip past flagged edges on the final
-   * select call.
+     * When calculating the edge index, w.select() won't take into
+     * account flagged edges. So define an offset and increment for every
+     * flagged c over the interval [0, w.select(c, index+ 1)).
+     * This ensures that we skip past flagged edges on the final
+     * select call.
      */
     for (int i = 0; i < forwardEdges->select(c, index + 1); i++) {
       if (*forwardFlags[i].state && forwardEdges->access(i) == c) {
@@ -438,4 +438,11 @@ int PairedDeBruijnGraph::backward(int e, const std::string &direction) {
   delete edge;
 
   return _edge;
+}
+
+int PairedDeBruijnGraph::outdegree(int u, const std::string &direction) {
+  return direction == "forward"
+             ? (forwardLast->select(true, u) - forwardLast->select(true, u - 1))
+             : (reverseLast->select(true, u) -
+                reverseLast->select(true, u - 1));
 }
